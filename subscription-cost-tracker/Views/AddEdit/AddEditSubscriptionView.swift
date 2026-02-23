@@ -207,6 +207,10 @@ struct AddEditSubscriptionView: View {
         }
 
         try? modelContext.save()
+
+        // 通知を再スケジュール（トータル金額を更新）
+        NotificationService.shared.scheduleAllNotifications(modelContext: modelContext)
+
         dismiss()
     }
 
@@ -214,6 +218,9 @@ struct AddEditSubscriptionView: View {
         if let subscription = subscription {
             modelContext.delete(subscription)
             try? modelContext.save()
+
+            // 通知を再スケジュール（トータル金額を更新）
+            NotificationService.shared.scheduleAllNotifications(modelContext: modelContext)
         }
         dismiss()
     }
