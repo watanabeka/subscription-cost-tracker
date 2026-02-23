@@ -1,0 +1,99 @@
+//
+//  HomeView.swift
+//  subscription-cost-tracker
+//
+//  Created by Claude Code
+//
+
+import SwiftUI
+import SwiftData
+
+struct HomeView: View {
+    @Environment(\.modelContext) private var modelContext
+    @State private var viewModel = HomeViewModel()
+    @State private var showingAddSheet = false
+
+    var body: some View {
+        NavigationStack {
+            ZStack(alignment: .bottomTrailing) {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // Header - Monthly Total
+                        VStack(spacing: 8) {
+                            Text(String(localized: "monthly_total"))
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Text("¥\(Int(viewModel.monthlyTotal))")
+                                .font(.system(size: 48, weight: .bold, design: .rounded))
+                                .foregroundStyle(.indigo)
+                            Text(String(localized: "per_month"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 30)
+
+                        // Subscription Cards
+                        if viewModel.sortedSubscriptions.isEmpty {
+                            VStack(spacing: 12) {
+                                Image(systemName: "plus.circle")
+                                    .font(.system(size: 60))
+                                    .foregroundStyle(.gray)
+                                Text(String(localized: "empty_state"))
+                                    .font(.body)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(.top, 60)
+                        } else {
+                            LazyVStack(spacing: 12) {
+                                ForEach(viewModel.sortedSubscriptions, id: \.id) { subscription in
+                                    NavigationLink {
+                                        AddEditSubscriptionView(subscription: subscription)
+                                    } label: {
+                                        SubscriptionCardView(subscription: subscription)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+                }
+
+                // Floating Action Button
+                Button {
+                    showingAddSheet = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                        .frame(width: 60, height: 60)
+                        .background(.indigo)
+                        .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+                }
+                .padding(20)
+            }
+            .navigationTitle(String(localized: "home_title"))
+            .onAppear {
+                viewModel.loadSubscriptions(from: modelContext)
+            }
+            .onChange(of: modelContext) {
+                viewModel.loadSubscriptions(from: modelContext)
+            }
+            .sheet(isPresented: $showingAddSheet) {
+                AddEditSubscriptionView()
+                    .onDisappear {
+                        viewModel.loadSubscriptions(from: modelContext)
+                    }
+            }
+        }
+    }
+}
+
+#Preview {
+    HomeView()
+        .modelContainer(for: Subscription.self, inMemory: true)
+}
