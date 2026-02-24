@@ -23,15 +23,18 @@ struct HomeView: View {
                             Text(String(localized: "monthly_total"))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
-                            Text("¥\(Int(viewModel.monthlyTotal))")
-                                .font(.system(size: 48, weight: .bold, design: .rounded))
-                                .foregroundStyle(.indigo)
-                            Text(String(localized: "per_month"))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            HStack(alignment: .lastTextBaseline, spacing: 4) {
+                                Text("¥\(Int(viewModel.monthlyTotal))")
+                                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.appTheme)
+                                Text(String(localized: "per_month"))
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 30)
+                        .padding(.vertical, 24)
 
                         // Subscription Cards
                         if viewModel.sortedSubscriptions.isEmpty {
@@ -70,13 +73,12 @@ struct HomeView: View {
                         .fontWeight(.semibold)
                         .foregroundStyle(.white)
                         .frame(width: 60, height: 60)
-                        .background(.indigo)
+                        .background(.appTheme)
                         .clipShape(Circle())
                         .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
                 }
                 .padding(20)
             }
-            .navigationTitle(String(localized: "home_title"))
             .onAppear {
                 viewModel.loadSubscriptions(from: modelContext)
             }

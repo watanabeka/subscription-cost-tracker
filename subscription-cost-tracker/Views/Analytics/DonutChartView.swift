@@ -9,53 +9,57 @@ import SwiftUI
 import Charts
 
 struct DonutChartView: View {
-    let data: [(category: SubscriptionCategory, amount: Double)]
+    let data: [(name: String, category: SubscriptionCategory, amount: Double)]
     let total: Double
 
-    private let chartColors: [SubscriptionCategory: Color] = [
-        .video: .blue,
-        .music: .purple,
-        .fitness: .green,
-        .productivity: .orange,
-        .game: .red,
-        .news: .yellow,
-        .cloud: .cyan,
-        .other: .gray
-    ]
+    /// カテゴリ内でのサービスの順位に基づいてシェードカラーを計算
+    private func colorForService(name: String, category: SubscriptionCategory) -> Color {
+        // 同カテゴリのサービスを金額降順で並べて index を特定
+        let siblings = data
+            .filter { $0.category == category }
+            .sorted { $0.amount > $1.amount }
+        let index = siblings.firstIndex(where: { $0.name == name }) ?? 0
+        return category.shadeColor(index: index, total: siblings.count)
+    }
 
     var body: some View {
-        ZStack {
+        VStack(spacing: 12) {
             // Donut Chart
-            Chart(data, id: \.category) { item in
-                SectorMark(
-                    angle: .value("Amount", item.amount),
-                    innerRadius: .ratio(0.6),
-                    angularInset: 2
-                )
-                .foregroundStyle(chartColors[item.category] ?? .gray)
-            }
+            ZStack {
+                Chart(data, id: \.name) { item in
+                    SectorMark(
+                        angle: .value("金額", item.amount),
+                        innerRadius: .ratio(0.58),
+                        angularInset: 1.5
+                    )
+                    .foregroundStyle(colorForService(name: item.name, category: item.category))
+                }
 
-            // Center Label
-            VStack(spacing: 4) {
-                Text("¥\(Int(total))")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
-                Text(String(localized: "per_month"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                // Center Label
+                VStack(spacing: 4) {
+                    Text("¥\(Int(total))")
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundStyle(.primary)
+                    Text(String(localized: "per_month"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
-        }
-        .overlay(alignment: .bottom) {
-            // Legend
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(data, id: \.category) { item in
+            .frame(height: 200)
+
+            // Legend — サービス名で表示、カテゴリ同系色
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(data, id: \.name) { item in
                     HStack(spacing: 8) {
-                        Circle()
-                            .fill(chartColors[item.category] ?? .gray)
-                            .frame(width: 12, height: 12)
-                        Text(item.category.localizedLabel)
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(colorForService(name: item.name, category: item.category))
+                            .frame(width: 10, height: 10)
+                        Text(item.name)
                             .font(.caption)
                             .foregroundStyle(.primary)
+                        Text("(\(item.category.localizedLabel))")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
                         Spacer()
                         Text("¥\(Int(item.amount))")
                             .font(.caption)
@@ -64,8 +68,6 @@ struct DonutChartView: View {
                     }
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 220)
         }
     }
 }
@@ -73,14 +75,14 @@ struct DonutChartView: View {
 #Preview {
     DonutChartView(
         data: [
-            (.video, 1490),
-            (.music, 980),
-            (.fitness, 8800),
-            (.productivity, 6028),
-            (.cloud, 130)
+            (name: "Netflix", category: .video, amount: 1490),
+            (name: "Disney+", category: .video, amount: 990),
+            (name: "Spotify", category: .music, amount: 980),
+            (name: "ジム", category: .fitness, amount: 8800),
+            (name: "Adobe CC", category: .productivity, amount: 6028),
+            (name: "iCloud+", category: .cloud, amount: 130)
         ],
-        total: 17428
+        total: 18418
     )
-    .frame(height: 280)
     .padding()
 }

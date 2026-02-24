@@ -21,24 +21,6 @@ struct AddEditSubscriptionView: View {
     @State private var startDate: Date = Date()
     @State private var weeklyUsageHours: Double = 0.0
     @State private var showingDeleteAlert = false
-    @State private var searchText: String = ""
-
-    private let presetServices = [
-        "Netflix", "Amazon Prime", "Disney+", "Hulu", "Apple TV+", "YouTube Premium",
-        "Spotify", "Apple Music", "Amazon Music", "LINE MUSIC",
-        "Adobe Creative Cloud", "Microsoft 365", "iCloud+", "Google One", "Dropbox",
-        "ChatGPT Plus", "Notion", "Slack", "Canva",
-        "Nintendo Switch Online", "Xbox Game Pass",
-        "Kindle Unlimited", "Audible", "dマガジン",
-        "ジム"
-    ]
-
-    private var filteredPresets: [String] {
-        if searchText.isEmpty {
-            return []
-        }
-        return presetServices.filter { $0.localizedCaseInsensitiveContains(searchText) }
-    }
 
     private var isValid: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty && amount > 0
@@ -47,35 +29,14 @@ struct AddEditSubscriptionView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // Service Name with Suggestions
+                // Service Name
                 Section {
-                    TextField(String(localized: "service_name_placeholder"), text: $searchText)
-                        .onChange(of: searchText) { _, newValue in
-                            name = newValue
-                        }
-
-                    if !filteredPresets.isEmpty {
-                        ForEach(filteredPresets, id: \.self) { preset in
-                            Button {
-                                name = preset
-                                searchText = preset
-                            } label: {
-                                HStack {
-                                    Text(preset)
-                                        .foregroundStyle(.primary)
-                                    Spacer()
-                                    Image(systemName: "arrow.up.left")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                        }
-                    }
+                    TextField(String(localized: "service_name_placeholder"), text: $name)
                 }
 
                 // Category
                 Section {
-                    Picker("Category", selection: $category) {
+                    Picker(String(localized: "label_category"), selection: $category) {
                         ForEach(SubscriptionCategory.allCases, id: \.self) { cat in
                             HStack {
                                 Image(systemName: cat.icon)
@@ -101,28 +62,21 @@ struct AddEditSubscriptionView: View {
                             Text(cycle.localizedLabel).tag(cycle)
                         }
                     } label: {
-                        Text("Billing Cycle")
+                        Text(String(localized: "label_billing_cycle"))
                     }
                     .pickerStyle(.segmented)
                 }
 
                 // Start Date
                 Section {
-                    DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
+                    DatePicker(String(localized: "label_start_date"), selection: $startDate, displayedComponents: .date)
                 }
 
                 // Weekly Usage Hours
                 Section {
                     HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(String(localized: "weekly_usage"))
-                                .font(.body)
-                            if weeklyUsageHours == 0 {
-                                Text(String(localized: "unused_label"))
-                                    .font(.caption)
-                                    .foregroundStyle(.gray)
-                            }
-                        }
+                        Text(String(localized: "weekly_usage"))
+                            .font(.body)
 
                         Spacer()
 
@@ -175,7 +129,6 @@ struct AddEditSubscriptionView: View {
             .onAppear {
                 if let subscription = subscription {
                     name = subscription.name
-                    searchText = subscription.name
                     category = subscription.category
                     amount = subscription.amount
                     billingCycle = subscription.billingCycle

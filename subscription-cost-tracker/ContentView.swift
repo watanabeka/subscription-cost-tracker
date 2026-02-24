@@ -23,6 +23,6 @@ struct ContentView: View {
                     Label(String(localized: "analytics_title"), systemImage: "chart.pie")
                 }
         }
-        .tint(.indigo)
+        .tint(.appTheme)
     }
 }

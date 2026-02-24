@@ -23,7 +23,7 @@ struct CalendarView: View {
                         } label: {
                             Image(systemName: "chevron.left")
                                 .font(.title3)
-                                .foregroundStyle(.indigo)
+                                .foregroundStyle(.appTheme)
                                 .frame(width: 44, height: 44)
                         }
 
@@ -40,7 +40,7 @@ struct CalendarView: View {
                         } label: {
                             Image(systemName: "chevron.right")
                                 .font(.title3)
-                                .foregroundStyle(.indigo)
+                                .foregroundStyle(.appTheme)
                                 .frame(width: 44, height: 44)
                         }
                     }
@@ -56,12 +56,12 @@ struct CalendarView: View {
 
                     // Payments List
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Payment Schedule")
+                        Text(String(localized: "label_payment_schedule"))
                             .font(.headline)
                             .padding(.horizontal)
 
                         if viewModel.paymentsForMonth().isEmpty {
-                            Text("No payments this month")
+                            Text(String(localized: "label_no_payments"))
                                 .font(.body)
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .center)
@@ -76,7 +76,6 @@ struct CalendarView: View {
                     .padding(.top, 20)
                 }
             }
-            .navigationTitle(String(localized: "calendar_title"))
             .onAppear {
                 viewModel.loadSubscriptions(from: modelContext)
             }
@@ -93,7 +92,8 @@ struct PaymentDayRow: View {
 
     private var dateLabel: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "M/d (E)"
+        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.dateFormat = "M月d日(E)"
         return formatter.string(from: date)
     }
 
@@ -107,7 +107,7 @@ struct PaymentDayRow: View {
                 Text(dateLabel)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundStyle(.indigo)
+                    .foregroundStyle(.appTheme)
                 Spacer()
                 Text("¥\(Int(totalAmount))")
                     .font(.headline)

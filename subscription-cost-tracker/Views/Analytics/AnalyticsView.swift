@@ -17,17 +17,16 @@ struct AnalyticsView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     // Donut Chart Section
-                    if !viewModel.categoryData.isEmpty {
+                    if !viewModel.serviceData.isEmpty {
                         VStack(spacing: 16) {
                             Text(String(localized: "monthly_total"))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
 
                             DonutChartView(
-                                data: viewModel.categoryData,
+                                data: viewModel.serviceData,
                                 total: viewModel.monthlyTotal
                             )
-                            .frame(height: 280)
                         }
                         .padding()
                         .background(Color(.secondarySystemBackground))
@@ -38,7 +37,7 @@ struct AnalyticsView: View {
                     // Cost Performance Cards
                     if !viewModel.sortedByAmount.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Cost Performance")
+                            Text(String(localized: "label_cost_performance"))
                                 .font(.headline)
                                 .padding(.horizontal)
 
@@ -52,7 +51,7 @@ struct AnalyticsView: View {
                             Image(systemName: "chart.pie")
                                 .font(.system(size: 60))
                                 .foregroundStyle(.gray)
-                            Text("No data to analyze")
+                            Text(String(localized: "label_no_analytics"))
                                 .font(.body)
                                 .foregroundStyle(.secondary)
                         }
@@ -61,7 +60,6 @@ struct AnalyticsView: View {
                 }
                 .padding(.vertical)
             }
-            .navigationTitle(String(localized: "analytics_title"))
             .onAppear {
                 viewModel.loadSubscriptions(from: modelContext)
             }

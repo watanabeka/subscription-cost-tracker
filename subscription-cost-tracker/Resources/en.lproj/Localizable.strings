@@ -34,3 +34,11 @@
 "unused_label" = "Unused";
 "service_name_placeholder" = "e.g. Netflix";
 "amount_placeholder" = "Enter amount";
+"label_category" = "Category";
+"label_billing_cycle" = "Billing Cycle";
+"label_start_date" = "Start Date";
+"label_payment_schedule" = "Payment Schedule";
+"label_no_payments" = "No payments this month";
+"label_cost_performance" = "Cost Performance";
+"label_no_analytics" = "No data to analyze";
+"label_value_score" = "Value Score";

@@ -12,7 +12,7 @@ struct CalendarGridView: View {
     let subscriptions: [Subscription]
 
     private let columns = Array(repeating: GridItem(.flexible()), count: 7)
-    private let weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    private let weekdays = ["日", "月", "火", "水", "木", "金", "土"]
 
     private var daysInMonth: [Date?] {
         let calendar = Calendar.current
@@ -34,9 +34,9 @@ struct CalendarGridView: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 4) {
             // Weekday Headers
-            LazyVGrid(columns: columns, spacing: 8) {
+            LazyVGrid(columns: columns, spacing: 4) {
                 ForEach(weekdays, id: \.self) { weekday in
                     Text(weekday)
                         .font(.caption2)
@@ -47,13 +47,13 @@ struct CalendarGridView: View {
             }
 
             // Calendar Days
-            LazyVGrid(columns: columns, spacing: 8) {
+            LazyVGrid(columns: columns, spacing: 4) {
                 ForEach(Array(daysInMonth.enumerated()), id: \.offset) { _, date in
                     if let date = date {
                         CalendarDayCell(date: date, subscriptions: paymentsForDay(date))
                     } else {
                         Color.clear
-                            .frame(height: 50)
+                            .frame(height: 60)
                     }
                 }
             }
@@ -104,31 +104,41 @@ struct CalendarDayCell: View {
     }
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 3) {
+            // Day number
             Text(dayLabel)
                 .font(.system(size: 14, weight: isToday ? .bold : .regular))
                 .foregroundStyle(isToday ? .white : .primary)
                 .frame(width: 24, height: 24)
-                .background(isToday ? Color.indigo : Color.clear)
+                .background(isToday ? Color.appTheme : Color.clear)
                 .clipShape(Circle())
 
+            // Service name bands
             if !subscriptions.isEmpty {
-                HStack(spacing: 2) {
-                    ForEach(subscriptions.prefix(3), id: \.id) { sub in
-                        Circle()
-                            .fill(sub.category == .video ? Color.indigo : Color.gray)
-                            .frame(width: 4, height: 4)
+                VStack(spacing: 2) {
+                    ForEach(subscriptions.prefix(2), id: \.id) { sub in
+                        Text(sub.name)
+                            .font(.system(size: 7, weight: .medium))
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 2)
+                            .padding(.vertical, 1.5)
+                            .background(sub.category.baseColor.opacity(0.22))
+                            .foregroundStyle(sub.category.baseColor)
+                            .clipShape(RoundedRectangle(cornerRadius: 2))
                     }
-                    if subscriptions.count > 3 {
-                        Text("+\(subscriptions.count - 3)")
-                            .font(.system(size: 8))
+                    if subscriptions.count > 2 {
+                        Text("+\(subscriptions.count - 2)")
+                            .font(.system(size: 7))
                             .foregroundStyle(.secondary)
                     }
                 }
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 50)
+        .frame(minHeight: 60)
+        .padding(.vertical, 2)
         .background(subscriptions.isEmpty ? Color.clear : Color(.tertiarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
