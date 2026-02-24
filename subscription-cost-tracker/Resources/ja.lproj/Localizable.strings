@@ -34,3 +34,11 @@
 "unused_label" = "未使用";
 "service_name_placeholder" = "例: Netflix";
 "amount_placeholder" = "金額を入力";
+"label_category" = "カテゴリ";
+"label_billing_cycle" = "支払いサイクル";
+"label_start_date" = "開始日";
+"label_payment_schedule" = "お支払い予定";
+"label_no_payments" = "今月の支払いはありません";
+"label_cost_performance" = "コストパフォーマンス";
+"label_no_analytics" = "データがありません";
+"label_value_score" = "バリュースコア";

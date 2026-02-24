@@ -20,7 +20,7 @@ struct SubscriptionCardView: View {
             // Category icon
             Image(systemName: subscription.category.icon)
                 .font(.title2)
-                .foregroundStyle(.indigo)
+                .foregroundStyle(.appTheme)
                 .frame(width: 40)
 
             // Service name and category

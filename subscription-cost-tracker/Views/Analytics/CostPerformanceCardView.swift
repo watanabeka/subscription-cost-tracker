@@ -16,7 +16,7 @@ struct CostPerformanceCardView: View {
             HStack(spacing: 12) {
                 Image(systemName: subscription.category.icon)
                     .font(.title3)
-                    .foregroundStyle(.indigo)
+                    .foregroundStyle(.appTheme)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(subscription.name)
@@ -53,23 +53,23 @@ struct CostPerformanceCardView: View {
                 Divider()
                     .frame(height: 40)
 
-                // Weekly Usage
+                // Weekly Usage — 0時間の場合は「−」表示
                 StatItem(
                     label: String(localized: "weekly_usage"),
                     value: subscription.weeklyUsageHours > 0
                         ? String(format: String(localized: "hours_per_week"), subscription.weeklyUsageHours)
-                        : String(localized: "unused_label")
+                        : "−"
                 )
 
                 Divider()
                     .frame(height: 40)
 
-                // Cost Per Hour
+                // Cost Per Hour — 利用時間なしの場合は「−」表示
                 StatItem(
                     label: String(localized: "cost_per_hour"),
                     value: subscription.costPerHour != nil
                         ? "¥\(Int(subscription.costPerHour!))\(String(localized: "per_hour"))"
-                        : String(localized: "unused_label")
+                        : "−"
                 )
             }
 
@@ -77,7 +77,7 @@ struct CostPerformanceCardView: View {
             if subscription.weeklyUsageHours > 0 {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
-                        Text("Value Score")
+                        Text(String(localized: "label_value_score"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Spacer()

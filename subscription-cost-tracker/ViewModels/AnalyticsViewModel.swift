@@ -16,9 +16,10 @@ class AnalyticsViewModel {
         subscriptions.reduce(0) { $0 + $1.monthlyAmount }
     }
 
-    var categoryData: [(category: SubscriptionCategory, amount: Double)] {
-        let grouped = Dictionary(grouping: subscriptions, by: { $0.category })
-        return grouped.map { (category: $0.key, amount: $0.value.reduce(0) { $0 + $1.monthlyAmount }) }
+    /// サービス単位のデータ（ドーナツチャート用）
+    var serviceData: [(name: String, category: SubscriptionCategory, amount: Double)] {
+        subscriptions
+            .map { (name: $0.name, category: $0.category, amount: $0.monthlyAmount) }
             .sorted { $0.amount > $1.amount }
     }
 
