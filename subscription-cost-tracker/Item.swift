@@ -14,6 +14,11 @@ extension Color {
     static let appTheme = Color(red: 0.36, green: 0.60, blue: 0.85)
 }
 
+// foregroundStyle(.appTheme) 等のショートハンドを使えるようにする
+extension ShapeStyle where Self == Color {
+    static var appTheme: Color { Color(red: 0.36, green: 0.60, blue: 0.85) }
+}
+
 @Model
 class Subscription {
     var id: UUID = UUID()
