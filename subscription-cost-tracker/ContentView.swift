@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var categoryStore = CategoryStore()
+
     var body: some View {
         TabView {
             HomeView()
@@ -22,7 +24,12 @@ struct ContentView: View {
                 .tabItem {
                     Label(String(localized: "analytics_title"), systemImage: "chart.pie")
                 }
+            SettingsView()
+                .tabItem {
+                    Label(String(localized: "settings_title"), systemImage: "gearshape")
+                }
         }
         .tint(.appTheme)
+        .environment(categoryStore)
     }
 }

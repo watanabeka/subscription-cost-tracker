@@ -9,12 +9,18 @@ import SwiftUI
 
 struct CostPerformanceCardView: View {
     let subscription: Subscription
+    @Environment(CategoryStore.self) private var categoryStore
 
     var body: some View {
+        let cat      = categoryStore.category(for: subscription.category)
+        let threshold = categoryStore.costPerHourThreshold
+        let status   = subscription.status(threshold: threshold)
+        let score    = subscription.valueScore(threshold: threshold)
+
         VStack(alignment: .leading, spacing: 12) {
             // Header: Service name and category icon
             HStack(spacing: 12) {
-                Image(systemName: subscription.category.icon)
+                Image(systemName: cat.iconName)
                     .font(.title3)
                     .foregroundStyle(.appTheme)
 
@@ -22,7 +28,7 @@ struct CostPerformanceCardView: View {
                     Text(subscription.name)
                         .font(.headline)
                         .foregroundStyle(.primary)
-                    Text(subscription.category.localizedLabel)
+                    Text(cat.name)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -30,13 +36,13 @@ struct CostPerformanceCardView: View {
                 Spacer()
 
                 // Status Badge
-                Text(subscription.status.label)
+                Text(status.label)
                     .font(.caption2)
                     .fontWeight(.medium)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(subscription.status.color)
+                    .background(status.color)
                     .clipShape(Capsule())
             }
 
@@ -81,7 +87,7 @@ struct CostPerformanceCardView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text(String(format: "%.0f%%", subscription.valueScore * 100))
+                        Text(String(format: "%.0f%%", score * 100))
                             .font(.caption)
                             .fontWeight(.semibold)
                             .foregroundStyle(.primary)
@@ -89,12 +95,9 @@ struct CostPerformanceCardView: View {
 
                     GeometryReader { geometry in
                         ZStack(alignment: .leading) {
-                            // Background
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(Color(.systemGray5))
                                 .frame(height: 8)
-
-                            // Progress
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(
                                     LinearGradient(
@@ -103,7 +106,7 @@ struct CostPerformanceCardView: View {
                                         endPoint: .trailing
                                     )
                                 )
-                                .frame(width: geometry.size.width * subscription.valueScore, height: 8)
+                                .frame(width: geometry.size.width * score, height: 8)
                         }
                     }
                     .frame(height: 8)
@@ -142,7 +145,7 @@ struct StatItem: View {
         CostPerformanceCardView(
             subscription: Subscription(
                 name: "Netflix",
-                category: .video,
+                category: "entertainment",
                 amount: 1490,
                 billingCycle: .monthly,
                 startDate: Date(),
@@ -152,7 +155,7 @@ struct StatItem: View {
         CostPerformanceCardView(
             subscription: Subscription(
                 name: "Adobe CC",
-                category: .productivity,
+                category: "productivity",
                 amount: 72336,
                 billingCycle: .yearly,
                 startDate: Date(),
@@ -162,7 +165,7 @@ struct StatItem: View {
         CostPerformanceCardView(
             subscription: Subscription(
                 name: "ジム",
-                category: .fitness,
+                category: "lifestyle",
                 amount: 8800,
                 billingCycle: .monthly,
                 startDate: Date(),
@@ -171,4 +174,5 @@ struct StatItem: View {
         )
     }
     .padding()
+    .environment(CategoryStore())
 }

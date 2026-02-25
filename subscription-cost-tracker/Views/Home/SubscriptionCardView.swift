@@ -9,16 +9,20 @@ import SwiftUI
 
 struct SubscriptionCardView: View {
     let subscription: Subscription
+    @Environment(CategoryStore.self) private var categoryStore
 
     var body: some View {
+        let cat = categoryStore.category(for: subscription.category)
+        let status = subscription.status(threshold: categoryStore.costPerHourThreshold)
+
         HStack(spacing: 16) {
             // Left border with status color
             Rectangle()
-                .fill(subscription.status.color)
+                .fill(status.color)
                 .frame(width: 4)
 
             // Category icon
-            Image(systemName: subscription.category.icon)
+            Image(systemName: cat.iconName)
                 .font(.title2)
                 .foregroundStyle(.appTheme)
                 .frame(width: 40)
@@ -28,7 +32,7 @@ struct SubscriptionCardView: View {
                 Text(subscription.name)
                     .font(.headline)
                     .foregroundStyle(.primary)
-                Text(subscription.category.localizedLabel)
+                Text(cat.name)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -43,13 +47,13 @@ struct SubscriptionCardView: View {
                     .foregroundStyle(.primary)
 
                 // Status badge
-                Text(subscription.status.label)
+                Text(status.label)
                     .font(.caption2)
                     .fontWeight(.medium)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(subscription.status.color)
+                    .background(status.color)
                     .clipShape(Capsule())
             }
         }
@@ -66,7 +70,7 @@ struct SubscriptionCardView: View {
         SubscriptionCardView(
             subscription: Subscription(
                 name: "Netflix",
-                category: .video,
+                category: "entertainment",
                 amount: 1490,
                 billingCycle: .monthly,
                 startDate: Date(),
@@ -76,7 +80,7 @@ struct SubscriptionCardView: View {
         SubscriptionCardView(
             subscription: Subscription(
                 name: "Spotify",
-                category: .music,
+                category: "entertainment",
                 amount: 980,
                 billingCycle: .monthly,
                 startDate: Date(),
@@ -86,7 +90,7 @@ struct SubscriptionCardView: View {
         SubscriptionCardView(
             subscription: Subscription(
                 name: "ジム",
-                category: .fitness,
+                category: "lifestyle",
                 amount: 8800,
                 billingCycle: .monthly,
                 startDate: Date(),
@@ -95,4 +99,5 @@ struct SubscriptionCardView: View {
         )
     }
     .padding()
+    .environment(CategoryStore())
 }

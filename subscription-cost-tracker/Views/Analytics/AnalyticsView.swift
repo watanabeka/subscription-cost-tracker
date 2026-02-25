@@ -11,21 +11,34 @@ import SwiftData
 struct AnalyticsView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = AnalyticsViewModel()
+    @State private var period: AnalyticsPeriod = .monthly
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
+                    // 期間ピッカー（月 / 年 / 累計）
+                    Picker("", selection: $period) {
+                        ForEach(AnalyticsPeriod.allCases, id: \.self) { p in
+                            Text(p.label).tag(p)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal)
+
+                    let currentData = viewModel.serviceData(for: period)
+
                     // Donut Chart Section
-                    if !viewModel.serviceData.isEmpty {
+                    if !currentData.isEmpty {
                         VStack(spacing: 16) {
-                            Text(String(localized: "monthly_total"))
+                            Text(String(localized: "label_amount"))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
 
                             DonutChartView(
-                                data: viewModel.serviceData,
-                                total: viewModel.monthlyTotal
+                                data: currentData,
+                                total: viewModel.total(for: period),
+                                period: period
                             )
                         }
                         .padding()
@@ -34,7 +47,7 @@ struct AnalyticsView: View {
                         .padding(.horizontal)
                     }
 
-                    // Cost Performance Cards
+                    // Cost Performance Cards（月額ベースで固定）
                     if !viewModel.sortedByAmount.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text(String(localized: "label_cost_performance"))
@@ -73,4 +86,5 @@ struct AnalyticsView: View {
 #Preview {
     AnalyticsView()
         .modelContainer(for: Subscription.self, inMemory: true)
+        .environment(CategoryStore())
 }

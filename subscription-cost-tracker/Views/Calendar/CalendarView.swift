@@ -11,6 +11,7 @@ import SwiftData
 struct CalendarView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = CalendarViewModel()
+    @State private var editingSubscription: Subscription? = nil
 
     var body: some View {
         NavigationStack {
@@ -68,7 +69,9 @@ struct CalendarView: View {
                                 .padding(.vertical, 40)
                         } else {
                             ForEach(viewModel.paymentsForMonth(), id: \.0) { date, subs in
-                                PaymentDayRow(date: date, subscriptions: subs)
+                                PaymentDayRow(date: date, subscriptions: subs) { sub in
+                                    editingSubscription = sub
+                                }
                             }
                             .padding(.horizontal)
                         }
@@ -82,6 +85,12 @@ struct CalendarView: View {
             .onChange(of: modelContext) {
                 viewModel.loadSubscriptions(from: modelContext)
             }
+            .sheet(item: $editingSubscription) { sub in
+                AddEditSubscriptionView(subscription: sub)
+                    .onDisappear {
+                        viewModel.loadSubscriptions(from: modelContext)
+                    }
+            }
         }
     }
 }
@@ -89,6 +98,8 @@ struct CalendarView: View {
 struct PaymentDayRow: View {
     let date: Date
     let subscriptions: [Subscription]
+    let onSelect: (Subscription) -> Void
+    @Environment(CategoryStore.self) private var categoryStore
 
     private var dateLabel: String {
         let formatter = DateFormatter()
@@ -114,20 +125,35 @@ struct PaymentDayRow: View {
                     .foregroundStyle(.primary)
             }
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 0) {
                 ForEach(subscriptions, id: \.id) { sub in
-                    HStack(spacing: 8) {
-                        Image(systemName: sub.category.icon)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(width: 20)
-                        Text(sub.name)
-                            .font(.body)
-                            .foregroundStyle(.primary)
-                        Spacer()
-                        Text("¥\(Int(sub.monthlyAmount))")
-                            .font(.body)
-                            .foregroundStyle(.secondary)
+                    Button {
+                        onSelect(sub)
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: categoryStore.category(for: sub.category).iconName)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .frame(width: 20)
+                            Text(sub.name)
+                                .font(.body)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Text("¥\(Int(sub.monthlyAmount))")
+                                .font(.body)
+                                .foregroundStyle(.secondary)
+                            Image(systemName: "chevron.right")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                        }
+                        .padding(.vertical, 10)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+
+                    if sub.id != subscriptions.last?.id {
+                        Divider()
+                            .padding(.leading, 28)
                     }
                 }
             }

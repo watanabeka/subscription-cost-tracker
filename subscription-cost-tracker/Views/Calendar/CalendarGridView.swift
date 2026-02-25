@@ -92,6 +92,7 @@ struct CalendarGridView: View {
 struct CalendarDayCell: View {
     let date: Date
     let subscriptions: [Subscription]
+    @Environment(CategoryStore.self) private var categoryStore
 
     private var dayLabel: String {
         let calendar = Calendar.current
@@ -117,6 +118,7 @@ struct CalendarDayCell: View {
             if !subscriptions.isEmpty {
                 VStack(spacing: 2) {
                     ForEach(subscriptions.prefix(2), id: \.id) { sub in
+                        let catColor = categoryStore.category(for: sub.category).baseColor
                         Text(sub.name)
                             .font(.system(size: 7, weight: .medium))
                             .lineLimit(1)
@@ -124,8 +126,8 @@ struct CalendarDayCell: View {
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, 2)
                             .padding(.vertical, 1.5)
-                            .background(sub.category.baseColor.opacity(0.22))
-                            .foregroundStyle(sub.category.baseColor)
+                            .background(catColor.opacity(0.22))
+                            .foregroundStyle(catColor)
                             .clipShape(RoundedRectangle(cornerRadius: 2))
                     }
                     if subscriptions.count > 2 {
@@ -150,4 +152,5 @@ struct CalendarDayCell: View {
         subscriptions: PreviewData.samples
     )
     .padding()
+    .environment(CategoryStore())
 }
