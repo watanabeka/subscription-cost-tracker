@@ -11,6 +11,7 @@ import Charts
 struct DonutChartView: View {
     let data: [(name: String, categoryId: String, amount: Double)]
     let total: Double
+    let period: AnalyticsPeriod
     @Environment(CategoryStore.self) private var categoryStore
 
     /// カテゴリ内でのサービスの順位に基づいてシェードカラーを計算
@@ -36,12 +37,12 @@ struct DonutChartView: View {
                     .foregroundStyle(colorForService(name: item.name, categoryId: item.categoryId))
                 }
 
-                // Center Label
+                // Center Label（期間に応じてサフィックスを変える）
                 VStack(spacing: 4) {
                     Text("¥\(Int(total))")
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundStyle(.primary)
-                    Text(String(localized: "per_month"))
+                    Text(period.chartCenterSuffix)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -83,7 +84,8 @@ struct DonutChartView: View {
             (name: "Adobe CC", categoryId: "productivity",  amount: 6028),
             (name: "iCloud+",  categoryId: "communication", amount: 130)
         ],
-        total: 18418
+        total: 18418,
+        period: .monthly
     )
     .padding()
     .environment(CategoryStore())

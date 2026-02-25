@@ -23,6 +23,8 @@ struct AddEditSubscriptionView: View {
     @State private var weeklyUsageHours: Double = 0.0
     @State private var showingDeleteAlert = false
 
+    private var isAddMode: Bool { subscription == nil }
+
     private var isValid: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty && amount > 0
     }
@@ -78,46 +80,53 @@ struct AddEditSubscriptionView: View {
                     HStack {
                         Text(String(localized: "weekly_usage"))
                             .font(.body)
-
                         Spacer()
-
                         Stepper(value: $weeklyUsageHours, in: 0...40, step: 0.5) {
                             Text(String(format: "%.1fh", weeklyUsageHours))
                                 .font(.headline)
                         }
                     }
                 }
-
-                // Delete Button (Edit mode only)
-                if subscription != nil {
-                    Section {
+            }
+            .navigationTitle(isAddMode
+                ? String(localized: "add_subscription")
+                : String(localized: "edit_subscription"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if isAddMode {
+                    // 追加モード: 右上に「閉じる」
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(String(localized: "close_button")) {
+                            dismiss()
+                        }
+                    }
+                } else {
+                    // 編集モード: 右上にゴミ箱アイコン（左の＜はNavigationStackが自動表示）
+                    ToolbarItem(placement: .topBarTrailing) {
                         Button(role: .destructive) {
                             showingDeleteAlert = true
                         } label: {
-                            HStack {
-                                Spacer()
-                                Text(String(localized: "delete"))
-                                    .fontWeight(.semibold)
-                                Spacer()
-                            }
+                            Image(systemName: "trash")
                         }
+                        .foregroundStyle(.red)
                     }
                 }
             }
-            .navigationTitle(subscription == nil ? String(localized: "add_subscription") : String(localized: "edit_subscription"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "cancel")) {
-                        dismiss()
-                    }
+            // 画面下部の保存ボタン（片手操作しやすい位置）
+            .safeAreaInset(edge: .bottom) {
+                Button(action: saveSubscription) {
+                    Text(String(localized: "save"))
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(isValid ? Color.appTheme : Color(.systemGray4))
+                        .foregroundStyle(isValid ? .white : Color(.systemGray2))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(String(localized: "save")) {
-                        saveSubscription()
-                    }
-                    .disabled(!isValid)
-                }
+                .disabled(!isValid)
+                .padding(.horizontal)
+                .padding(.vertical, 10)
+                .background(.ultraThinMaterial)
             }
             .alert(String(localized: "delete_confirm_title"), isPresented: $showingDeleteAlert) {
                 Button(String(localized: "delete"), role: .destructive) {
@@ -136,7 +145,6 @@ struct AddEditSubscriptionView: View {
                     startDate = subscription.startDate
                     weeklyUsageHours = subscription.weeklyUsageHours
                 } else {
-                    // Default to first visible category
                     category = categoryStore.categories.first?.id ?? "other"
                 }
             }
@@ -162,12 +170,8 @@ struct AddEditSubscriptionView: View {
             )
             modelContext.insert(newSubscription)
         }
-
         try? modelContext.save()
-
-        // 通知を再スケジュール（トータル金額を更新）
         NotificationService.shared.scheduleAllNotifications(modelContext: modelContext)
-
         dismiss()
     }
 
@@ -175,8 +179,6 @@ struct AddEditSubscriptionView: View {
         if let subscription = subscription {
             modelContext.delete(subscription)
             try? modelContext.save()
-
-            // 通知を再スケジュール（トータル金額を更新）
             NotificationService.shared.scheduleAllNotifications(modelContext: modelContext)
         }
         dismiss()

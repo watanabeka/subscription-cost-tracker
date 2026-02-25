@@ -12,7 +12,10 @@ struct CostPerformanceCardView: View {
     @Environment(CategoryStore.self) private var categoryStore
 
     var body: some View {
-        let cat = categoryStore.category(for: subscription.category)
+        let cat      = categoryStore.category(for: subscription.category)
+        let threshold = categoryStore.costPerHourThreshold
+        let status   = subscription.status(threshold: threshold)
+        let score    = subscription.valueScore(threshold: threshold)
 
         VStack(alignment: .leading, spacing: 12) {
             // Header: Service name and category icon
@@ -33,13 +36,13 @@ struct CostPerformanceCardView: View {
                 Spacer()
 
                 // Status Badge
-                Text(subscription.status.label)
+                Text(status.label)
                     .font(.caption2)
                     .fontWeight(.medium)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(subscription.status.color)
+                    .background(status.color)
                     .clipShape(Capsule())
             }
 
@@ -84,7 +87,7 @@ struct CostPerformanceCardView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text(String(format: "%.0f%%", subscription.valueScore * 100))
+                        Text(String(format: "%.0f%%", score * 100))
                             .font(.caption)
                             .fontWeight(.semibold)
                             .foregroundStyle(.primary)
@@ -92,12 +95,9 @@ struct CostPerformanceCardView: View {
 
                     GeometryReader { geometry in
                         ZStack(alignment: .leading) {
-                            // Background
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(Color(.systemGray5))
                                 .frame(height: 8)
-
-                            // Progress
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(
                                     LinearGradient(
@@ -106,7 +106,7 @@ struct CostPerformanceCardView: View {
                                         endPoint: .trailing
                                     )
                                 )
-                                .frame(width: geometry.size.width * subscription.valueScore, height: 8)
+                                .frame(width: geometry.size.width * score, height: 8)
                         }
                     }
                     .frame(height: 8)

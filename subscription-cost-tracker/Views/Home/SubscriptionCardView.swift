@@ -13,11 +13,12 @@ struct SubscriptionCardView: View {
 
     var body: some View {
         let cat = categoryStore.category(for: subscription.category)
+        let status = subscription.status(threshold: categoryStore.costPerHourThreshold)
 
         HStack(spacing: 16) {
             // Left border with status color
             Rectangle()
-                .fill(subscription.status.color)
+                .fill(status.color)
                 .frame(width: 4)
 
             // Category icon
@@ -46,13 +47,13 @@ struct SubscriptionCardView: View {
                     .foregroundStyle(.primary)
 
                 // Status badge
-                Text(subscription.status.label)
+                Text(status.label)
                     .font(.caption2)
                     .fontWeight(.medium)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(subscription.status.color)
+                    .background(status.color)
                     .clipShape(Capsule())
             }
         }

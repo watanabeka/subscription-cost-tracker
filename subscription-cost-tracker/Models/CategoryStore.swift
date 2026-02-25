@@ -20,7 +20,7 @@ struct CategoryItem: Codable, Identifiable, Equatable {
 
     var baseColor: Color {
         guard id != "other" else { return Color(white: 0.58) }
-        return Color(hue: colorHue, saturation: 0.65, brightness: 0.78)
+        return Color(hue: colorHue, saturation: 0.70, brightness: 0.82)
     }
 
     /// カテゴリ内サービス位置に応じたシェードカラー（index 0 が最も暗い）
@@ -30,8 +30,8 @@ struct CategoryItem: Codable, Identifiable, Equatable {
             return Color(white: b)
         }
         let ratio = total > 1 ? Double(index) / Double(total - 1) : 0.5
-        let brightness = 0.45 + ratio * 0.42           // 0.45（暗）→ 0.87（明）
-        let saturation = max(0.10, 0.65 - ratio * 0.20) // 明るくなるほど彩度を下げる
+        let brightness = 0.45 + ratio * 0.42
+        let saturation = max(0.10, 0.70 - ratio * 0.22)
         return Color(hue: colorHue, saturation: saturation, brightness: min(0.95, brightness))
     }
 }
@@ -41,9 +41,14 @@ struct CategoryItem: Codable, Identifiable, Equatable {
 @Observable
 final class CategoryStore {
 
-    private static let storageKey = "categoryStore_v1"
+    /// バージョンを上げるとカテゴリを再シード（色変更時等）
+    private static let storageKey   = "categoryStore_v2"
+    private static let thresholdKey = "costPerHourThreshold"
 
     var categories: [CategoryItem] = []
+
+    /// 「高いと感じる」時間あたりコストの基準値（円/h）デフォルト 1000
+    var costPerHourThreshold: Double = 1000
 
     static let fallback = CategoryItem(
         id: "other", name: "Other",
@@ -51,34 +56,49 @@ final class CategoryStore {
     )
 
     init() {
+        let stored = UserDefaults.standard.double(forKey: Self.thresholdKey)
+        costPerHourThreshold = stored > 0 ? stored : 1000
         load()
     }
 
-    // MARK: - Default categories
+    // MARK: - Threshold persistence
+
+    func saveThreshold() {
+        UserDefaults.standard.set(costPerHourThreshold, forKey: Self.thresholdKey)
+    }
+
+    // MARK: - Default categories（v2: 色を刷新）
 
     private func makeDefaults() -> [CategoryItem] {
         [
+            // エンタメ: ビビッドなピンク/マゼンタ
             CategoryItem(id: "entertainment",
                          name: String(localized: "category_entertainment"),
-                         iconName: "sparkles",          colorHue: 0.085, isBuiltin: true),
+                         iconName: "sparkles",          colorHue: 0.86, isBuiltin: true),
+            // 仕事・生産性: 落ち着いたブルー
             CategoryItem(id: "productivity",
                          name: String(localized: "category_productivity"),
-                         iconName: "briefcase",          colorHue: 0.075, isBuiltin: true),
+                         iconName: "briefcase",          colorHue: 0.60, isBuiltin: true),
+            // 学習: エメラルドグリーン
             CategoryItem(id: "learning",
                          name: String(localized: "category_learning"),
-                         iconName: "book.closed",        colorHue: 0.370, isBuiltin: true),
+                         iconName: "book.closed",        colorHue: 0.38, isBuiltin: true),
+            // ライフスタイル: オレンジ
             CategoryItem(id: "lifestyle",
                          name: String(localized: "category_lifestyle"),
-                         iconName: "leaf",               colorHue: 0.310, isBuiltin: true),
+                         iconName: "leaf",               colorHue: 0.07, isBuiltin: true),
+            // 通信・固定費: ティール/シアン
             CategoryItem(id: "communication",
                          name: String(localized: "category_communication"),
-                         iconName: "antenna.radiowaves.left.and.right", colorHue: 0.600, isBuiltin: true),
+                         iconName: "antenna.radiowaves.left.and.right", colorHue: 0.52, isBuiltin: true),
+            // ショッピング: レッド
             CategoryItem(id: "shopping",
                          name: String(localized: "category_shopping"),
-                         iconName: "cart",               colorHue: 0.755, isBuiltin: true),
+                         iconName: "cart",               colorHue: 0.97, isBuiltin: true),
+            // その他: グレー
             CategoryItem(id: "other",
                          name: String(localized: "category_other"),
-                         iconName: "ellipsis.circle",   colorHue: 0.0,   isBuiltin: true),
+                         iconName: "ellipsis.circle",   colorHue: 0.0,  isBuiltin: true),
         ]
     }
 
@@ -109,15 +129,11 @@ final class CategoryStore {
     // MARK: - Mutations
 
     func add(name: String) {
-        // Cycle through visually distinct hues for new custom categories
         let hues: [Double] = [0.55, 0.13, 0.83, 0.02, 0.47, 0.68, 0.27]
         let hue = hues[categories.count % hues.count]
         let item = CategoryItem(
-            id: UUID().uuidString,
-            name: name,
-            iconName: "tag",
-            colorHue: hue,
-            isBuiltin: false
+            id: UUID().uuidString, name: name,
+            iconName: "tag", colorHue: hue, isBuiltin: false
         )
         categories.append(item)
         persist()
