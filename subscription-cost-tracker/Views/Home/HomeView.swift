@@ -12,9 +12,10 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = HomeViewModel()
     @State private var showingAddSheet = false
+    @State private var path = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ZStack(alignment: .bottomTrailing) {
                 ScrollView {
                     VStack(spacing: 20) {
@@ -51,8 +52,8 @@ struct HomeView: View {
                         } else {
                             LazyVStack(spacing: 12) {
                                 ForEach(viewModel.sortedSubscriptions, id: \.id) { subscription in
-                                    NavigationLink {
-                                        AddEditSubscriptionView(subscription: subscription)
+                                    Button {
+                                        path.append(subscription)
                                     } label: {
                                         SubscriptionCardView(subscription: subscription)
                                     }
@@ -79,7 +80,14 @@ struct HomeView: View {
                 }
                 .padding(20)
             }
+            .navigationDestination(for: Subscription.self) { subscription in
+                AddEditSubscriptionView(subscription: subscription)
+                    .onDisappear {
+                        viewModel.loadSubscriptions(from: modelContext)
+                    }
+            }
             .onAppear {
+                path = NavigationPath()
                 viewModel.loadSubscriptions(from: modelContext)
             }
             .onChange(of: modelContext) {
