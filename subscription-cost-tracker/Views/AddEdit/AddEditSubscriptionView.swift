@@ -11,11 +11,12 @@ import SwiftData
 struct AddEditSubscriptionView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(CategoryStore.self) private var categoryStore
 
     var subscription: Subscription?
 
     @State private var name: String = ""
-    @State private var category: SubscriptionCategory = .other
+    @State private var category: String = "other"
     @State private var amount: Double = 0.0
     @State private var billingCycle: BillingCycle = .monthly
     @State private var startDate: Date = Date()
@@ -37,12 +38,12 @@ struct AddEditSubscriptionView: View {
                 // Category
                 Section {
                     Picker(String(localized: "label_category"), selection: $category) {
-                        ForEach(SubscriptionCategory.allCases, id: \.self) { cat in
+                        ForEach(categoryStore.categories) { cat in
                             HStack {
-                                Image(systemName: cat.icon)
-                                Text(cat.localizedLabel)
+                                Image(systemName: cat.iconName)
+                                Text(cat.name)
                             }
-                            .tag(cat)
+                            .tag(cat.id)
                         }
                     }
                     .pickerStyle(.menu)
@@ -134,6 +135,9 @@ struct AddEditSubscriptionView: View {
                     billingCycle = subscription.billingCycle
                     startDate = subscription.startDate
                     weeklyUsageHours = subscription.weeklyUsageHours
+                } else {
+                    // Default to first visible category
+                    category = categoryStore.categories.first?.id ?? "other"
                 }
             }
         }
@@ -182,4 +186,5 @@ struct AddEditSubscriptionView: View {
 #Preview {
     AddEditSubscriptionView()
         .modelContainer(for: Subscription.self, inMemory: true)
+        .environment(CategoryStore())
 }

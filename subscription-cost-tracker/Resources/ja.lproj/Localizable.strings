@@ -1,6 +1,7 @@
 "home_title" = "ホーム";
 "calendar_title" = "カレンダー";
 "analytics_title" = "分析";
+"settings_title" = "設定";
 "add_subscription" = "サブスクを追加";
 "edit_subscription" = "サブスクを編集";
 "monthly_total" = "今月の合計";
@@ -18,13 +19,12 @@
 "delete_confirm_title" = "削除の確認";
 "delete_confirm_message" = "このサブスクを削除しますか？この操作は元に戻せません。";
 "empty_state" = "+ボタンからサブスクを追加しましょう";
-"category_video" = "動画";
-"category_music" = "音楽";
-"category_fitness" = "フィットネス";
+"category_entertainment" = "エンタメ";
 "category_productivity" = "仕事・生産性";
-"category_game" = "ゲーム";
-"category_news" = "ニュース・読書";
-"category_cloud" = "クラウド";
+"category_learning" = "学習";
+"category_lifestyle" = "ライフスタイル";
+"category_communication" = "通信・固定費";
+"category_shopping" = "ショッピング";
 "category_other" = "その他";
 "notification_title" = "今月のサブスク利用を記録しよう";
 "notification_body" = "先月、元が取れてないサブスクはありますか？";
@@ -42,3 +42,10 @@
 "label_cost_performance" = "コストパフォーマンス";
 "label_no_analytics" = "データがありません";
 "label_value_score" = "バリュースコア";
+"settings_version" = "アプリバージョン";
+"settings_review" = "レビュー";
+"settings_privacy" = "プライバシーポリシー";
+"settings_categories" = "カテゴリ設定";
+"settings_add_category" = "カテゴリを追加";
+"settings_edit_category" = "カテゴリを編集";
+"settings_category_name_placeholder" = "カテゴリ名";

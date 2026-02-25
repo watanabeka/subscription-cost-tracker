@@ -9,12 +9,15 @@ import SwiftUI
 
 struct CostPerformanceCardView: View {
     let subscription: Subscription
+    @Environment(CategoryStore.self) private var categoryStore
 
     var body: some View {
+        let cat = categoryStore.category(for: subscription.category)
+
         VStack(alignment: .leading, spacing: 12) {
             // Header: Service name and category icon
             HStack(spacing: 12) {
-                Image(systemName: subscription.category.icon)
+                Image(systemName: cat.iconName)
                     .font(.title3)
                     .foregroundStyle(.appTheme)
 
@@ -22,7 +25,7 @@ struct CostPerformanceCardView: View {
                     Text(subscription.name)
                         .font(.headline)
                         .foregroundStyle(.primary)
-                    Text(subscription.category.localizedLabel)
+                    Text(cat.name)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -142,7 +145,7 @@ struct StatItem: View {
         CostPerformanceCardView(
             subscription: Subscription(
                 name: "Netflix",
-                category: .video,
+                category: "entertainment",
                 amount: 1490,
                 billingCycle: .monthly,
                 startDate: Date(),
@@ -152,7 +155,7 @@ struct StatItem: View {
         CostPerformanceCardView(
             subscription: Subscription(
                 name: "Adobe CC",
-                category: .productivity,
+                category: "productivity",
                 amount: 72336,
                 billingCycle: .yearly,
                 startDate: Date(),
@@ -162,7 +165,7 @@ struct StatItem: View {
         CostPerformanceCardView(
             subscription: Subscription(
                 name: "ジム",
-                category: .fitness,
+                category: "lifestyle",
                 amount: 8800,
                 billingCycle: .monthly,
                 startDate: Date(),
@@ -171,4 +174,5 @@ struct StatItem: View {
         )
     }
     .padding()
+    .environment(CategoryStore())
 }

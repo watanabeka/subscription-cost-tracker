@@ -17,9 +17,9 @@ class AnalyticsViewModel {
     }
 
     /// サービス単位のデータ（ドーナツチャート用）
-    var serviceData: [(name: String, category: SubscriptionCategory, amount: Double)] {
+    var serviceData: [(name: String, categoryId: String, amount: Double)] {
         subscriptions
-            .map { (name: $0.name, category: $0.category, amount: $0.monthlyAmount) }
+            .map { (name: $0.name, categoryId: $0.category, amount: $0.monthlyAmount) }
             .sorted { $0.amount > $1.amount }
     }
 

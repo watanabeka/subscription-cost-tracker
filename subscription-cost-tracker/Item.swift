@@ -23,7 +23,7 @@ extension ShapeStyle where Self == Color {
 class Subscription {
     var id: UUID = UUID()
     var name: String = ""
-    var category: SubscriptionCategory = SubscriptionCategory.other
+    var category: String = "other"   // stores CategoryItem.id
     var amount: Double = 0.0
     var billingCycle: BillingCycle = BillingCycle.monthly
     var startDate: Date = Date()
@@ -32,7 +32,7 @@ class Subscription {
 
     init(
         name: String,
-        category: SubscriptionCategory,
+        category: String,
         amount: Double,
         billingCycle: BillingCycle,
         startDate: Date,
@@ -90,60 +90,6 @@ enum BillingCycle: String, Codable, CaseIterable {
     }
 }
 
-enum SubscriptionCategory: String, Codable, CaseIterable {
-    case video, music, fitness, productivity, game, news, cloud, other
-
-    var icon: String {
-        switch self {
-        case .video:        return "play.tv"
-        case .music:        return "music.note"
-        case .fitness:      return "figure.run"
-        case .productivity: return "briefcase"
-        case .game:         return "gamecontroller"
-        case .news:         return "newspaper"
-        case .cloud:        return "cloud"
-        case .other:        return "ellipsis.circle"
-        }
-    }
-
-    var localizedLabel: String {
-        String(localized: "category_\(rawValue)")
-    }
-
-    // カテゴリごとのHSBベース値 (hue, saturation)
-    private var hsbBase: (hue: Double, sat: Double) {
-        switch self {
-        case .video:        return (0.600, 0.70)
-        case .music:        return (0.755, 0.62)
-        case .fitness:      return (0.370, 0.68)
-        case .productivity: return (0.075, 0.78)
-        case .game:         return (0.000, 0.72)
-        case .news:         return (0.145, 0.80)
-        case .cloud:        return (0.520, 0.62)
-        case .other:        return (0.000, 0.00)
-        }
-    }
-
-    /// カテゴリのベースカラー（カレンダー帯・アイコン等に使用）
-    var baseColor: Color {
-        if self == .other { return Color(white: 0.58) }
-        let h = hsbBase
-        return Color(hue: h.hue, saturation: h.sat, brightness: 0.78)
-    }
-
-    /// カテゴリ内のサービス位置に応じたシェードカラー（index 0 が最も暗い）
-    func shadeColor(index: Int, total: Int) -> Color {
-        if self == .other {
-            let b = total > 1 ? 0.42 + Double(index) / Double(total - 1) * 0.32 : 0.58
-            return Color(white: b)
-        }
-        let h = hsbBase
-        let ratio = total > 1 ? Double(index) / Double(total - 1) : 0.5
-        let brightness = 0.45 + ratio * 0.42   // 0.45（暗）→ 0.87（明）
-        let saturation = h.sat - ratio * 0.20  // 明るくなるほど彩度を下げる
-        return Color(hue: h.hue, saturation: max(0.10, saturation), brightness: min(0.95, brightness))
-    }
-}
 
 enum SubscriptionStatus {
     case unused, poor, fair, good

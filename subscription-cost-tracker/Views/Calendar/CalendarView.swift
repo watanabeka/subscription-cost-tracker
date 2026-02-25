@@ -89,6 +89,7 @@ struct CalendarView: View {
 struct PaymentDayRow: View {
     let date: Date
     let subscriptions: [Subscription]
+    @Environment(CategoryStore.self) private var categoryStore
 
     private var dateLabel: String {
         let formatter = DateFormatter()
@@ -117,7 +118,7 @@ struct PaymentDayRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(subscriptions, id: \.id) { sub in
                     HStack(spacing: 8) {
-                        Image(systemName: sub.category.icon)
+                        Image(systemName: categoryStore.category(for: sub.category).iconName)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .frame(width: 20)
