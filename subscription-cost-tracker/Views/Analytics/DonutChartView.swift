@@ -30,7 +30,7 @@ struct DonutChartView: View {
             ZStack {
                 Chart(data, id: \.name) { item in
                     SectorMark(
-                        angle: .value("金額", item.amount),
+                        angle: .value(String(localized: "label_amount"), item.amount),
                         innerRadius: .ratio(0.58),
                         angularInset: 1.5
                     )
@@ -39,7 +39,7 @@ struct DonutChartView: View {
 
                 // Center Label（期間に応じてサフィックスを変える）
                 VStack(spacing: 4) {
-                    Text("¥\(Int(total))")
+                    Text("\(categoryStore.currencySymbol)\(Int(total))")
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundStyle(.primary)
                     Text(period.chartCenterSuffix)
@@ -63,7 +63,7 @@ struct DonutChartView: View {
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text("¥\(Int(item.amount))")
+                        Text("\(categoryStore.currencySymbol)\(Int(item.amount))")
                             .font(.caption)
                             .fontWeight(.semibold)
                             .foregroundStyle(.secondary)

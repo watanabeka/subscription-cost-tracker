@@ -54,7 +54,7 @@ struct AddEditSubscriptionView: View {
                 // Amount and Billing Cycle
                 Section {
                     HStack {
-                        Text("¥")
+                        Text(categoryStore.currencySymbol)
                             .foregroundStyle(.secondary)
                         TextField(String(localized: "amount_placeholder"), value: $amount, format: .number)
                             .keyboardType(.decimalPad)

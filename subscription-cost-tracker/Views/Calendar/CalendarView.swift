@@ -103,8 +103,8 @@ struct PaymentDayRow: View {
 
     private var dateLabel: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "M月d日(E)"
+        formatter.locale = Locale.current
+        formatter.setLocalizedDateFormatFromTemplate("MdE")
         return formatter.string(from: date)
     }
 
@@ -120,7 +120,7 @@ struct PaymentDayRow: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(.appTheme)
                 Spacer()
-                Text("¥\(Int(totalAmount))")
+                Text("\(categoryStore.currencySymbol)\(Int(totalAmount))")
                     .font(.headline)
                     .foregroundStyle(.primary)
             }
@@ -139,7 +139,7 @@ struct PaymentDayRow: View {
                                 .font(.body)
                                 .foregroundStyle(.primary)
                             Spacer()
-                            Text("¥\(Int(sub.monthlyAmount))")
+                            Text("\(categoryStore.currencySymbol)\(Int(sub.monthlyAmount))")
                                 .font(.body)
                                 .foregroundStyle(.secondary)
                             Image(systemName: "chevron.right")

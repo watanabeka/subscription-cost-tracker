@@ -62,3 +62,9 @@
 "settings_category_name_placeholder" = "カテゴリ名";
 "category_in_use_title" = "カテゴリ使用中";
 "category_in_use_message" = "このカテゴリを使用しているサブスクのカテゴリを先に変更してください。";
+"notification_weekly_check_title" = "サブスク利用チェック";
+"notification_weekly_check_body" = "今週のサブスク利用状況はどうですか？";
+"notification_update_title" = "サブスク更新のお知らせ";
+"notification_update_body" = "開始から%d日経過。累計支出額: %@";
+"settings_currency_section" = "通貨設定";
+"settings_currency" = "通貨";

@@ -36,6 +36,14 @@ struct CategoryItem: Codable, Identifiable, Equatable {
     }
 }
 
+// MARK: - CurrencyOption
+
+struct CurrencyOption: Identifiable {
+    let id: String          // ISO code e.g. "USD"
+    let symbol: String      // e.g. "$"
+    let displayName: String // e.g. "USD ($)"
+}
+
 // MARK: - CategoryStore
 
 @Observable
@@ -44,11 +52,34 @@ final class CategoryStore {
     /// バージョンを上げるとカテゴリを再シード（色変更時等）
     private static let storageKey   = "categoryStore_v2"
     private static let thresholdKey = "costPerHourThreshold"
+    private static let currencyKey  = "selectedCurrencyCode"
 
     var categories: [CategoryItem] = []
 
     /// 「高いと感じる」時間あたりコストの基準値（円/h）デフォルト 1000
     var costPerHourThreshold: Double = 1000
+
+    /// Selected currency ISO code (e.g. "USD", "JPY")
+    var selectedCurrencyCode: String = "USD"
+
+    /// Currency symbol derived from selectedCurrencyCode
+    var currencySymbol: String {
+        Self.supportedCurrencies.first { $0.id == selectedCurrencyCode }?.symbol ?? "$"
+    }
+
+    /// Supported currencies
+    static let supportedCurrencies: [CurrencyOption] = [
+        CurrencyOption(id: "USD", symbol: "$",   displayName: "USD ($)"),
+        CurrencyOption(id: "JPY", symbol: "¥",   displayName: "JPY (¥)"),
+        CurrencyOption(id: "EUR", symbol: "€",   displayName: "EUR (€)"),
+        CurrencyOption(id: "GBP", symbol: "£",   displayName: "GBP (£)"),
+        CurrencyOption(id: "CNY", symbol: "CN¥", displayName: "CNY (CN¥)"),
+    ]
+
+    /// Returns the symbol for a given currency code (for use in non-SwiftUI contexts)
+    static func symbol(forCurrencyCode code: String) -> String {
+        supportedCurrencies.first { $0.id == code }?.symbol ?? "$"
+    }
 
     static let fallback = CategoryItem(
         id: "other", name: "Other",
@@ -58,6 +89,16 @@ final class CategoryStore {
     init() {
         let stored = UserDefaults.standard.double(forKey: Self.thresholdKey)
         costPerHourThreshold = stored > 0 ? stored : 1000
+
+        if let saved = UserDefaults.standard.string(forKey: Self.currencyKey) {
+            selectedCurrencyCode = saved
+        } else {
+            // First launch: default based on device language
+            let langCode = Locale.current.language.languageCode?.identifier ?? "en"
+            selectedCurrencyCode = langCode == "ja" ? "JPY" : "USD"
+            UserDefaults.standard.set(selectedCurrencyCode, forKey: Self.currencyKey)
+        }
+
         load()
     }
 
@@ -65,6 +106,12 @@ final class CategoryStore {
 
     func saveThreshold() {
         UserDefaults.standard.set(costPerHourThreshold, forKey: Self.thresholdKey)
+    }
+
+    // MARK: - Currency persistence
+
+    func saveCurrency() {
+        UserDefaults.standard.set(selectedCurrencyCode, forKey: Self.currencyKey)
     }
 
     // MARK: - Default categories（v2: 色を刷新）

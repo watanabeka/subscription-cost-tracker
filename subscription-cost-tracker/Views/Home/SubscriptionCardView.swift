@@ -41,7 +41,7 @@ struct SubscriptionCardView: View {
 
             // Monthly amount and status badge
             VStack(alignment: .trailing, spacing: 6) {
-                Text("¥\(Int(subscription.monthlyAmount))")
+                Text("\(categoryStore.currencySymbol)\(Int(subscription.monthlyAmount))")
                     .font(.title3)
                     .fontWeight(.bold)
                     .foregroundStyle(.primary)

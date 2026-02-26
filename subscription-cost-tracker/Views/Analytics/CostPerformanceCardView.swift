@@ -53,7 +53,7 @@ struct CostPerformanceCardView: View {
                 // Monthly Amount
                 StatItem(
                     label: String(localized: "monthly_total"),
-                    value: "¥\(Int(subscription.monthlyAmount))"
+                    value: "\(categoryStore.currencySymbol)\(Int(subscription.monthlyAmount))"
                 )
 
                 Divider()
@@ -74,7 +74,7 @@ struct CostPerformanceCardView: View {
                 StatItem(
                     label: String(localized: "cost_per_hour"),
                     value: subscription.costPerHour != nil
-                        ? "¥\(Int(subscription.costPerHour!))\(String(localized: "per_hour"))"
+                        ? "\(categoryStore.currencySymbol)\(Int(subscription.costPerHour!))\(String(localized: "per_hour"))"
                         : "−"
                 )
             }

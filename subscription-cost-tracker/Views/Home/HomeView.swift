@@ -10,6 +10,7 @@ import SwiftData
 
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(CategoryStore.self) private var categoryStore
     @State private var viewModel = HomeViewModel()
     @State private var showingAddSheet = false
     @State private var path = NavigationPath()
@@ -25,7 +26,7 @@ struct HomeView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             HStack(alignment: .lastTextBaseline, spacing: 4) {
-                                Text("¥\(Int(viewModel.monthlyTotal))")
+                                Text("\(categoryStore.currencySymbol)\(Int(viewModel.monthlyTotal))")
                                     .font(.system(size: 48, weight: .bold, design: .rounded))
                                     .foregroundStyle(.appTheme)
                                 Text(String(localized: "per_month"))

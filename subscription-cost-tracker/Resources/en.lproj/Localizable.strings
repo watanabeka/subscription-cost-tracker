@@ -62,3 +62,9 @@
 "settings_category_name_placeholder" = "Category Name";
 "category_in_use_title" = "Category In Use";
 "category_in_use_message" = "Change the category of all subscriptions using this category first.";
+"notification_weekly_check_title" = "Subscription Usage Check";
+"notification_weekly_check_body" = "How are your subscriptions going this week?";
+"notification_update_title" = "Subscription Update";
+"notification_update_body" = "%d days since start. Total spent: %@";
+"settings_currency_section" = "Currency";
+"settings_currency" = "Currency";

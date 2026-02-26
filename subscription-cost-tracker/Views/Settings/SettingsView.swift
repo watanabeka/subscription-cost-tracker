@@ -55,6 +55,20 @@ struct SettingsView: View {
                     }
                 }
 
+                // MARK: Currency
+                Section {
+                    Picker(String(localized: "settings_currency"), selection: $store.selectedCurrencyCode) {
+                        ForEach(CategoryStore.supportedCurrencies) { currency in
+                            Text(currency.displayName).tag(currency.id)
+                        }
+                    }
+                    .onChange(of: categoryStore.selectedCurrencyCode) { _, _ in
+                        categoryStore.saveCurrency()
+                    }
+                } header: {
+                    Text(String(localized: "settings_currency_section"))
+                }
+
                 // MARK: Cost Performance
                 Section {
                     // Threshold input
@@ -62,7 +76,7 @@ struct SettingsView: View {
                         Text(String(localized: "settings_cost_threshold"))
                         Spacer()
                         HStack(spacing: 4) {
-                            Text("¥").foregroundStyle(.secondary)
+                            Text(categoryStore.currencySymbol).foregroundStyle(.secondary)
                             TextField("1000", value: $store.costPerHourThreshold, format: .number)
                                 .keyboardType(.numberPad)
                                 .multilineTextAlignment(.trailing)
@@ -76,12 +90,14 @@ struct SettingsView: View {
 
                     // Dynamic threshold table
                     let t = categoryStore.costPerHourThreshold
+                    let sym = categoryStore.currencySymbol
+                    let perHour = String(localized: "per_hour")
                     VStack(alignment: .leading, spacing: 6) {
-                        ThresholdRow(range: "> ¥\(formatYen(t * 2.0))/h",   label: String(localized: "status_too_expensive"), color: SubscriptionStatus.tooExpensive.color)
-                        ThresholdRow(range: "> ¥\(formatYen(t))/h",         label: String(localized: "status_expensive"),     color: SubscriptionStatus.expensive.color)
-                        ThresholdRow(range: "¥\(formatYen(t * 0.65))〜\(formatYen(t))/h", label: String(localized: "status_overpriced"), color: SubscriptionStatus.overpriced.color)
-                        ThresholdRow(range: "¥\(formatYen(t * 0.30))〜\(formatYen(t * 0.65))/h", label: String(localized: "status_fair"), color: SubscriptionStatus.fair.color)
-                        ThresholdRow(range: "< ¥\(formatYen(t * 0.30))/h",  label: String(localized: "status_good"),          color: SubscriptionStatus.good.color)
+                        ThresholdRow(range: "> \(sym)\(formatAmount(t * 2.0))\(perHour)",   label: String(localized: "status_too_expensive"), color: SubscriptionStatus.tooExpensive.color)
+                        ThresholdRow(range: "> \(sym)\(formatAmount(t))\(perHour)",         label: String(localized: "status_expensive"),     color: SubscriptionStatus.expensive.color)
+                        ThresholdRow(range: "\(sym)\(formatAmount(t * 0.65)) – \(sym)\(formatAmount(t))\(perHour)", label: String(localized: "status_overpriced"), color: SubscriptionStatus.overpriced.color)
+                        ThresholdRow(range: "\(sym)\(formatAmount(t * 0.30)) – \(sym)\(formatAmount(t * 0.65))\(perHour)", label: String(localized: "status_fair"), color: SubscriptionStatus.fair.color)
+                        ThresholdRow(range: "< \(sym)\(formatAmount(t * 0.30))\(perHour)",  label: String(localized: "status_good"),          color: SubscriptionStatus.good.color)
                     }
                     .padding(.vertical, 4)
                 } header: {
@@ -171,7 +187,7 @@ struct SettingsView: View {
         }
     }
 
-    private func formatYen(_ value: Double) -> String {
+    private func formatAmount(_ value: Double) -> String {
         let v = Int(value.rounded())
         return v >= 1000 ? "\(v / 1000),\(String(format: "%03d", v % 1000))" : "\(v)"
     }
