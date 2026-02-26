@@ -4,9 +4,10 @@
 "settings_title" = "Settings";
 "add_subscription" = "Add Subscription";
 "edit_subscription" = "Edit Subscription";
-"monthly_total" = "This Month";
-"cost_per_hour" = "Cost / Hour";
-"weekly_usage" = "Weekly Usage";
+"monthly_total" = "Amount";
+"cost_per_hour" = "Cost";
+"weekly_usage" = "Usage";
+"hours_per_week_unit" = "h/wk";
 "billing_monthly" = "Monthly";
 "billing_yearly" = "Yearly";
 "status_unused" = "Unused";
@@ -45,7 +46,7 @@
 "label_no_payments" = "No payments this month";
 "label_cost_performance" = "Cost Performance";
 "label_no_analytics" = "No data to analyze";
-"label_value_score" = "Value Score";
+"label_value_score" = "Score";
 "label_amount" = "Amount";
 "label_cumulative" = "cumul.";
 "period_monthly" = "Month";
@@ -55,7 +56,7 @@
 "settings_review" = "Leave a Review";
 "settings_privacy" = "Privacy Policy";
 "settings_cost_performance_section" = "Cost Performance";
-"settings_cost_threshold" = "Feels expensive above";
+"settings_cost_threshold" = "Value Benchmark";
 "settings_categories" = "Category Settings";
 "settings_add_category" = "Add Category";
 "settings_edit_category" = "Edit Category";

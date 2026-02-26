@@ -15,6 +15,9 @@ struct SettingsView: View {
     @State private var editingCategory: CategoryItem? = nil
     @State private var editingName = ""
     @State private var showingDeleteInUseAlert = false
+    @State private var showingThresholdInput = false
+    @State private var tempThresholdText = ""
+    @FocusState private var isThresholdFocused: Bool
 
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -29,41 +32,26 @@ struct SettingsView: View {
 
         NavigationStack {
             List {
-                // MARK: App Info
-                Section {
-                    HStack {
-                        Text(String(localized: "settings_version"))
-                        Spacer()
-                        Text(appVersion)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Button { openURL("itms-apps://itunes.apple.com/app/id000000000?action=write-review") } label: {
-                        HStack {
-                            Text(String(localized: "settings_review")).foregroundStyle(.primary)
-                            Spacer()
-                            Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
-                        }
-                    }
-
-                    Button { openURL("https://example.com/privacy") } label: {
-                        HStack {
-                            Text(String(localized: "settings_privacy")).foregroundStyle(.primary)
-                            Spacer()
-                            Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
-                        }
-                    }
-                }
-
                 // MARK: Currency
                 Section {
-                    Picker(String(localized: "settings_currency"), selection: $store.selectedCurrencyCode) {
-                        ForEach(CategoryStore.supportedCurrencies) { currency in
-                            Text(currency.displayName).tag(currency.id)
+                    HStack {
+                        Text(String(localized: "settings_currency"))
+                        Spacer()
+                        Menu {
+                            ForEach(CategoryStore.supportedCurrencies) { currency in
+                                Button {
+                                    categoryStore.selectedCurrencyCode = currency.id
+                                    categoryStore.saveCurrency()
+                                } label: {
+                                    Text(currency.displayName)
+                                }
+                            }
+                        } label: {
+                            Text(categoryStore.currencySymbol)
+                                .fontWeight(.bold)
+                                .font(.system(size: 17 * 1.3))
+                                .foregroundStyle(.primary)
                         }
-                    }
-                    .onChange(of: categoryStore.selectedCurrencyCode) { _, _ in
-                        categoryStore.saveCurrency()
                     }
                 } header: {
                     Text(String(localized: "settings_currency_section"))
@@ -75,17 +63,22 @@ struct SettingsView: View {
                     HStack {
                         Text(String(localized: "settings_cost_threshold"))
                         Spacer()
-                        HStack(spacing: 4) {
-                            Text(categoryStore.currencySymbol).foregroundStyle(.secondary)
-                            TextField("1000", value: $store.costPerHourThreshold, format: .number)
-                                .keyboardType(.numberPad)
-                                .multilineTextAlignment(.trailing)
-                                .frame(width: 70)
-                            Text(String(localized: "per_hour")).foregroundStyle(.secondary)
+                        Button {
+                            tempThresholdText = "\(Int(categoryStore.costPerHourThreshold))"
+                            showingThresholdInput = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(categoryStore.currencySymbol)
+                                    .fontWeight(.bold)
+                                    .font(.system(size: 17 * 1.3))
+                                Text("\(Int(categoryStore.costPerHourThreshold))")
+                                    .fontWeight(.bold)
+                                    .font(.system(size: 17 * 1.3))
+                                Text(String(localized: "per_hour"))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .foregroundStyle(.blue)
                         }
-                    }
-                    .onChange(of: categoryStore.costPerHourThreshold) { _, _ in
-                        categoryStore.saveThreshold()
                     }
 
                     // Dynamic threshold table
@@ -149,13 +142,94 @@ struct SettingsView: View {
                             newCategoryName = ""
                             showingAddCategory = true
                         } label: {
-                            Image(systemName: "plus").font(.subheadline)
+                            Image(systemName: "plus")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(width: 24, height: 24)
+                                .background(Circle().fill(Color.blue))
+                        }
+                    }
+                }
+
+                // MARK: App Info
+                Section {
+                    HStack {
+                        Text(String(localized: "settings_version"))
+                        Spacer()
+                        Text(appVersion)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button { openURL("itms-apps://itunes.apple.com/app/id000000000?action=write-review") } label: {
+                        HStack {
+                            Text(String(localized: "settings_review")).foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
+                        }
+                    }
+
+                    Button { openURL("https://example.com/privacy") } label: {
+                        HStack {
+                            Text(String(localized: "settings_privacy")).foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
                         }
                     }
                 }
             }
-            .navigationTitle(String(localized: "settings_title"))
-            .toolbar { EditButton() }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+        // Threshold input sheet
+        .sheet(isPresented: $showingThresholdInput) {
+            NavigationStack {
+                VStack(spacing: 20) {
+                    Text(String(localized: "settings_cost_threshold"))
+                        .font(.headline)
+                        .padding(.top, 20)
+
+                    HStack(spacing: 8) {
+                        Text(categoryStore.currencySymbol)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        TextField("1000", text: $tempThresholdText)
+                            .keyboardType(.numberPad)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .multilineTextAlignment(.center)
+                            .frame(width: 120)
+                            .padding(12)
+                            .background(Color(.systemGray6))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .focused($isThresholdFocused)
+                        Text(String(localized: "per_hour"))
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+                }
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(String(localized: "close_button")) {
+                            saveThreshold()
+                            showingThresholdInput = false
+                        }
+                    }
+                }
+                .onAppear {
+                    isThresholdFocused = true
+                }
+            }
+            .presentationDetents([.height(250)])
+            .presentationDragIndicator(.visible)
+            .interactiveDismissDisabled(false)
+            .onDisappear {
+                if !tempThresholdText.isEmpty {
+                    saveThreshold()
+                }
+            }
         }
         // Add category
         .alert(String(localized: "settings_add_category"), isPresented: $showingAddCategory) {
@@ -185,6 +259,14 @@ struct SettingsView: View {
         } message: {
             Text(String(localized: "category_in_use_message"))
         }
+    }
+
+    private func saveThreshold() {
+        if let value = Double(tempThresholdText), value > 0 {
+            categoryStore.costPerHourThreshold = value
+            categoryStore.saveThreshold()
+        }
+        // 未入力やゼロの場合は元の値を維持（何もしない）
     }
 
     private func formatAmount(_ value: Double) -> String {

@@ -4,9 +4,10 @@
 "settings_title" = "設定";
 "add_subscription" = "サブスクを追加";
 "edit_subscription" = "サブスクを編集";
-"monthly_total" = "今月の合計";
-"cost_per_hour" = "時間あたりコスト";
-"weekly_usage" = "週あたり利用時間";
+"monthly_total" = "金額";
+"cost_per_hour" = "コスト";
+"weekly_usage" = "利用時間";
+"hours_per_week_unit" = "h/週";
 "billing_monthly" = "月額";
 "billing_yearly" = "年額";
 "status_unused" = "未使用";
@@ -45,7 +46,7 @@
 "label_no_payments" = "今月の支払いはありません";
 "label_cost_performance" = "コストパフォーマンス";
 "label_no_analytics" = "データがありません";
-"label_value_score" = "バリュースコア";
+"label_value_score" = "スコア";
 "label_amount" = "金額";
 "label_cumulative" = "累計";
 "period_monthly" = "月";
@@ -55,7 +56,7 @@
 "settings_review" = "レビュー";
 "settings_privacy" = "プライバシーポリシー";
 "settings_cost_performance_section" = "コストパフォーマンス基準";
-"settings_cost_threshold" = "高いと感じる時給";
+"settings_cost_threshold" = "コスパ基準";
 "settings_categories" = "カテゴリ設定";
 "settings_add_category" = "カテゴリを追加";
 "settings_edit_category" = "カテゴリを編集";

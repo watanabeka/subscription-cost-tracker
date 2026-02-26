@@ -46,40 +46,7 @@ struct CostPerformanceCardView: View {
                     .clipShape(Capsule())
             }
 
-            Divider()
-
-            // Stats Grid
-            HStack(spacing: 0) {
-                // Monthly Amount
-                StatItem(
-                    label: String(localized: "monthly_total"),
-                    value: "\(categoryStore.currencySymbol)\(Int(subscription.monthlyAmount))"
-                )
-
-                Divider()
-                    .frame(height: 40)
-
-                // Weekly Usage — 0時間の場合は「−」表示
-                StatItem(
-                    label: String(localized: "weekly_usage"),
-                    value: subscription.weeklyUsageHours > 0
-                        ? String(format: String(localized: "hours_per_week"), subscription.weeklyUsageHours)
-                        : "−"
-                )
-
-                Divider()
-                    .frame(height: 40)
-
-                // Cost Per Hour — 利用時間なしの場合は「−」表示
-                StatItem(
-                    label: String(localized: "cost_per_hour"),
-                    value: subscription.costPerHour != nil
-                        ? "\(categoryStore.currencySymbol)\(Int(subscription.costPerHour!))\(String(localized: "per_hour"))"
-                        : "−"
-                )
-            }
-
-            // Value Score Progress Bar
+            // Value Score Progress Bar (ゲージ)
             if subscription.weeklyUsageHours > 0 {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
@@ -111,6 +78,37 @@ struct CostPerformanceCardView: View {
                     }
                     .frame(height: 8)
                 }
+            }
+
+            // Stats Grid
+            HStack(spacing: 0) {
+                // Monthly Amount
+                StatItem(
+                    label: String(localized: "monthly_total"),
+                    value: "\(categoryStore.currencySymbol)\(Int(subscription.monthlyAmount))"
+                )
+
+                Divider()
+                    .frame(height: 40)
+
+                // Weekly Usage — 0時間の場合は「−」表示
+                StatItem(
+                    label: String(localized: "weekly_usage"),
+                    value: subscription.weeklyUsageHours > 0
+                        ? String(format: String(localized: "hours_per_week"), subscription.weeklyUsageHours)
+                        : "−"
+                )
+
+                Divider()
+                    .frame(height: 40)
+
+                // Cost Per Hour — 利用時間なしの場合は「−」表示
+                StatItem(
+                    label: String(localized: "cost_per_hour"),
+                    value: subscription.costPerHour != nil
+                        ? "\(categoryStore.currencySymbol)\(Int(subscription.costPerHour!))\(String(localized: "per_hour"))"
+                        : "−"
+                )
             }
         }
         .padding()
