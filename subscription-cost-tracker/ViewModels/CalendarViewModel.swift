@@ -15,7 +15,8 @@ class CalendarViewModel {
 
     var monthLabel: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy年 M月"
+        formatter.locale = Locale.current
+        formatter.setLocalizedDateFormatFromTemplate("yMMMM")
         return formatter.string(from: currentMonth)
     }
 

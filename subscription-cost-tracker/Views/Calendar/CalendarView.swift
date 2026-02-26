@@ -10,6 +10,7 @@ import SwiftData
 
 struct CalendarView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(CategoryStore.self) private var categoryStore
     @State private var viewModel = CalendarViewModel()
     @State private var editingSubscription: Subscription? = nil
 
@@ -57,9 +58,18 @@ struct CalendarView: View {
 
                     // Payments List
                     VStack(alignment: .leading, spacing: 12) {
-                        Text(String(localized: "label_payment_schedule"))
-                            .font(.headline)
-                            .padding(.horizontal)
+                        HStack {
+                            Text(String(localized: "label_payment_schedule"))
+                                .font(.headline)
+                            Spacer()
+                            let monthTotal = viewModel.paymentsForMonth().reduce(0.0) { sum, payment in
+                                sum + payment.1.reduce(0.0) { $0 + $1.monthlyAmount }
+                            }
+                            Text("\(categoryStore.currencySymbol)\(Int(monthTotal))")
+                                .font(.headline)
+                                .foregroundStyle(.appTheme)
+                        }
+                        .padding(.horizontal)
 
                         if viewModel.paymentsForMonth().isEmpty {
                             Text(String(localized: "label_no_payments"))
@@ -103,27 +113,18 @@ struct PaymentDayRow: View {
 
     private var dateLabel: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "M月d日(E)"
+        formatter.locale = Locale.current
+        formatter.setLocalizedDateFormatFromTemplate("MdE")
         return formatter.string(from: date)
-    }
-
-    private var totalAmount: Double {
-        subscriptions.reduce(0) { $0 + $1.monthlyAmount }
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(dateLabel)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.appTheme)
-                Spacer()
-                Text("¥\(Int(totalAmount))")
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-            }
+            // 日付のみ表示（合計額は削除）
+            Text(dateLabel)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.appTheme)
 
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(subscriptions, id: \.id) { sub in
@@ -139,7 +140,7 @@ struct PaymentDayRow: View {
                                 .font(.body)
                                 .foregroundStyle(.primary)
                             Spacer()
-                            Text("¥\(Int(sub.monthlyAmount))")
+                            Text("\(categoryStore.currencySymbol)\(Int(sub.monthlyAmount))")
                                 .font(.body)
                                 .foregroundStyle(.secondary)
                             Image(systemName: "chevron.right")

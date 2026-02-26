@@ -30,7 +30,7 @@ struct DonutChartView: View {
             ZStack {
                 Chart(data, id: \.name) { item in
                     SectorMark(
-                        angle: .value("金額", item.amount),
+                        angle: .value(String(localized: "label_amount"), item.amount),
                         innerRadius: .ratio(0.58),
                         angularInset: 1.5
                     )
@@ -39,7 +39,7 @@ struct DonutChartView: View {
 
                 // Center Label（期間に応じてサフィックスを変える）
                 VStack(spacing: 4) {
-                    Text("¥\(Int(total))")
+                    Text("\(categoryStore.currencySymbol)\(Int(total))")
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundStyle(.primary)
                     Text(period.chartCenterSuffix)
@@ -49,21 +49,17 @@ struct DonutChartView: View {
             }
             .frame(height: 200)
 
-            // Legend — サービス名で表示、カテゴリ同系色
-            VStack(alignment: .leading, spacing: 6) {
+            // Legend — サービス名：金額、1行2サービス表示
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 8) {
                 ForEach(data, id: \.name) { item in
-                    HStack(spacing: 8) {
+                    HStack(spacing: 4) {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(colorForService(name: item.name, categoryId: item.categoryId))
-                            .frame(width: 10, height: 10)
-                        Text(item.name)
+                            .frame(width: 8, height: 8)
+                        Text("\(item.name):")
                             .font(.caption)
                             .foregroundStyle(.primary)
-                        Text("(\(categoryStore.category(for: item.categoryId).name))")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text("¥\(Int(item.amount))")
+                        Text("\(categoryStore.currencySymbol)\(Int(item.amount))")
                             .font(.caption)
                             .fontWeight(.semibold)
                             .foregroundStyle(.secondary)

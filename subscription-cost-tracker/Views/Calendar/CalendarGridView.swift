@@ -12,7 +12,7 @@ struct CalendarGridView: View {
     let subscriptions: [Subscription]
 
     private let columns = Array(repeating: GridItem(.flexible()), count: 7)
-    private let weekdays = ["日", "月", "火", "水", "木", "金", "土"]
+    private var weekdays: [String] { Calendar.current.shortWeekdaySymbols }
 
     private var daysInMonth: [Date?] {
         let calendar = Calendar.current

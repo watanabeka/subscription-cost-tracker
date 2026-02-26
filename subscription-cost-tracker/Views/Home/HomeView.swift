@@ -10,12 +10,13 @@ import SwiftData
 
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(CategoryStore.self) private var categoryStore
     @State private var viewModel = HomeViewModel()
     @State private var showingAddSheet = false
-    @State private var path = NavigationPath()
+    @State private var editingSubscription: Subscription? = nil
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack {
             ZStack(alignment: .bottomTrailing) {
                 ScrollView {
                     VStack(spacing: 20) {
@@ -25,7 +26,7 @@ struct HomeView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             HStack(alignment: .lastTextBaseline, spacing: 4) {
-                                Text("¥\(Int(viewModel.monthlyTotal))")
+                                Text("\(categoryStore.currencySymbol)\(Int(viewModel.monthlyTotal))")
                                     .font(.system(size: 48, weight: .bold, design: .rounded))
                                     .foregroundStyle(.appTheme)
                                 Text(String(localized: "per_month"))
@@ -53,7 +54,7 @@ struct HomeView: View {
                             LazyVStack(spacing: 12) {
                                 ForEach(viewModel.sortedSubscriptions, id: \.id) { subscription in
                                     Button {
-                                        path.append(subscription)
+                                        editingSubscription = subscription
                                     } label: {
                                         SubscriptionCardView(subscription: subscription)
                                     }
@@ -80,14 +81,7 @@ struct HomeView: View {
                 }
                 .padding(20)
             }
-            .navigationDestination(for: Subscription.self) { subscription in
-                AddEditSubscriptionView(subscription: subscription)
-                    .onDisappear {
-                        viewModel.loadSubscriptions(from: modelContext)
-                    }
-            }
             .onAppear {
-                path = NavigationPath()
                 viewModel.loadSubscriptions(from: modelContext)
             }
             .onChange(of: modelContext) {
@@ -95,6 +89,12 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showingAddSheet) {
                 AddEditSubscriptionView()
+                    .onDisappear {
+                        viewModel.loadSubscriptions(from: modelContext)
+                    }
+            }
+            .sheet(item: $editingSubscription) { subscription in
+                AddEditSubscriptionView(subscription: subscription)
                     .onDisappear {
                         viewModel.loadSubscriptions(from: modelContext)
                     }

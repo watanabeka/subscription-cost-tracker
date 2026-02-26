@@ -18,9 +18,8 @@ final class NotificationService {
         UNUserNotificationCenter.current().requestAuthorization(
             options: [.alert, .sound, .badge]
         ) { granted, error in
-            print("通知許可: \(granted)")
             if let error = error {
-                print("通知許可エラー: \(error)")
+                print("Notification permission error: \(error)")
             }
         }
     }
@@ -56,7 +55,7 @@ final class NotificationService {
         center.add(request)
     }
 
-    // 13時の週次利用状況確認通知をスケジュール（テスト用）
+    // 13時の週次利用状況確認通知をスケジュール
     func scheduleWeeklyUsageCheckNotification() {
         let center = UNUserNotificationCenter.current()
 
@@ -64,8 +63,8 @@ final class NotificationService {
         center.removePendingNotificationRequests(withIdentifiers: ["weekly_usage_check"])
 
         let content = UNMutableNotificationContent()
-        content.title = "サブスク利用チェック"
-        content.body = "今週のサブスク利用状況はどうですか？"
+        content.title = String(localized: "notification_weekly_check_title")
+        content.body = String(localized: "notification_weekly_check_body")
         content.sound = .default
 
         // 毎日13時に通知（本番は週次にする予定）
@@ -86,7 +85,7 @@ final class NotificationService {
 
         center.add(request) { error in
             if let error = error {
-                print("13時通知スケジュールエラー: \(error)")
+                print("Weekly notification schedule error: \(error)")
             }
         }
     }
@@ -99,20 +98,18 @@ final class NotificationService {
         center.removePendingNotificationRequests(withIdentifiers: ["subscription_update"])
 
         let content = UNMutableNotificationContent()
-        content.title = "サブスク更新のお知らせ"
+        content.title = String(localized: "notification_update_title")
 
         // 開始日からの日数を計算
         let calendar = Calendar.current
         let days = calendar.dateComponents([.day], from: startDate, to: Date()).day ?? 0
 
-        // トータル金額をフォーマット
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "JPY"
-        formatter.maximumFractionDigits = 0
-        let amountString = formatter.string(from: NSNumber(value: totalAmount)) ?? "¥0"
+        // トータル金額をユーザー選択通貨でフォーマット
+        let currencyCode = UserDefaults.standard.string(forKey: "selectedCurrencyCode") ?? "USD"
+        let symbol = CategoryStore.symbol(forCurrencyCode: currencyCode)
+        let amountString = "\(symbol)\(Int(totalAmount))"
 
-        content.body = "開始から\(days)日経過。累計支出額: \(amountString)"
+        content.body = String(format: String(localized: "notification_update_body"), days, amountString)
         content.sound = .default
 
         // 毎日21時に通知
@@ -133,7 +130,7 @@ final class NotificationService {
 
         center.add(request) { error in
             if let error = error {
-                print("21時通知スケジュールエラー: \(error)")
+                print("Update notification schedule error: \(error)")
             }
         }
     }
@@ -168,12 +165,10 @@ final class NotificationService {
 
             switch subscription.billingCycle {
             case .monthly:
-                // 月額サブスクの場合、経過月数 × 料金
                 let months = calendar.dateComponents([.month], from: subStartDate, to: now).month ?? 0
                 total += Double(max(months, 1)) * subscription.amount
 
             case .yearly:
-                // 年額サブスクの場合、経過年数 × 料金
                 let years = calendar.dateComponents([.year], from: subStartDate, to: now).year ?? 0
                 total += Double(max(years, 1)) * subscription.amount
             }

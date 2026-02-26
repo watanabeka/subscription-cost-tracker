@@ -31,10 +31,6 @@ struct AnalyticsView: View {
                     // Donut Chart Section
                     if !currentData.isEmpty {
                         VStack(spacing: 16) {
-                            Text(String(localized: "label_amount"))
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-
                             DonutChartView(
                                 data: currentData,
                                 total: viewModel.total(for: period),

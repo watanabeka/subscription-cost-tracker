@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import StoreKit
 
 struct AddEditSubscriptionView: View {
     @Environment(\.modelContext) private var modelContext
@@ -54,7 +55,7 @@ struct AddEditSubscriptionView: View {
                 // Amount and Billing Cycle
                 Section {
                     HStack {
-                        Text("¥")
+                        Text(categoryStore.currencySymbol)
                             .foregroundStyle(.secondary)
                         TextField(String(localized: "amount_placeholder"), value: $amount, format: .number)
                             .keyboardType(.decimalPad)
@@ -82,7 +83,7 @@ struct AddEditSubscriptionView: View {
                             .font(.body)
                         Spacer()
                         Stepper(value: $weeklyUsageHours, in: 0...40, step: 0.5) {
-                            Text(String(format: "%.1fh", weeklyUsageHours))
+                            Text(String(format: "%.1f", weeklyUsageHours) + String(localized: "hours_per_week_unit"))
                                 .font(.headline)
                         }
                     }
@@ -152,6 +153,8 @@ struct AddEditSubscriptionView: View {
     }
 
     private func saveSubscription() {
+        let isNewSubscription = subscription == nil
+
         if let existing = subscription {
             existing.name = name.trimmingCharacters(in: .whitespaces)
             existing.category = category
@@ -172,7 +175,31 @@ struct AddEditSubscriptionView: View {
         }
         try? modelContext.save()
         NotificationService.shared.scheduleAllNotifications(modelContext: modelContext)
+
+        // 新規追加時にレビュー依頼をチェック
+        if isNewSubscription {
+            requestReviewIfNeeded()
+        }
+
         dismiss()
+    }
+
+    private func requestReviewIfNeeded() {
+        // レビュー依頼を既に表示したかチェック
+        let hasRequestedReview = UserDefaults.standard.bool(forKey: "hasRequestedReview")
+        guard !hasRequestedReview else { return }
+
+        // 全サブスク数を取得
+        let descriptor = FetchDescriptor<Subscription>()
+        guard let subscriptions = try? modelContext.fetch(descriptor) else { return }
+
+        // サブスクが2つになったらレビュー依頼を表示
+        if subscriptions.count == 2 {
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                SKStoreReviewController.requestReview(in: windowScene)
+                UserDefaults.standard.set(true, forKey: "hasRequestedReview")
+            }
+        }
     }
 
     private func deleteSubscription() {
