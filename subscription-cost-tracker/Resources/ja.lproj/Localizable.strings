@@ -64,7 +64,9 @@
 "category_in_use_title" = "カテゴリ使用中";
 "category_in_use_message" = "このカテゴリを使用しているサブスクのカテゴリを先に変更してください。";
 "settings_notification_section" = "通知";
-"settings_notification_description" = "サブスクの管理状況と利用状況の通知設定";
+"settings_notification_description" = "サブスクの管理状況と利用状況を通知します";
+"notification_time_weekly" = "毎週月曜日の10時に送信します";
+"notification_time_monthly" = "毎月1日の10時に送信します";
 "notification_off" = "オフ";
 "notification_weekly" = "毎週";
 "notification_monthly" = "毎月";

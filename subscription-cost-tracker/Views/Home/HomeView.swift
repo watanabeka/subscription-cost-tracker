@@ -19,25 +19,25 @@ struct HomeView: View {
         NavigationStack {
             ZStack(alignment: .bottomTrailing) {
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 0) {
+                        // コスパの悪いアプリ数バナー（横幅いっぱい）
+                        let poorCount = viewModel.poorValueCount(threshold: categoryStore.costPerHourThreshold)
+                        if poorCount > 0 {
+                            Text(String(format: String(localized: "home_poor_value_label"), poorCount))
+                                .font(.system(size: 12 * 1.2)) // captionサイズ(12pt)を20%増
+                                .fontWeight(.medium)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(Color(hue: 0.0, saturation: 0.55, brightness: 0.92).opacity(0.85))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .padding(.horizontal) // カードと同じ余白
+                                .padding(.top, 16) // ラベル上側の余白
+                                .padding(.bottom, 7) // ラベルと金額の間の余白（20の1/3≈7）
+                        }
+
                         // Header - Monthly Total
                         VStack(spacing: 8) {
-                            // コスパの悪いアプリ数バナー
-                            let poorCount = viewModel.poorValueCount(threshold: categoryStore.costPerHourThreshold)
-                            if poorCount > 0 {
-                                Text(String(format: String(localized: "home_poor_value_label"), poorCount))
-                                    .font(.caption)
-                                    .fontWeight(.medium)
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 6)
-                                    .background(Color(hue: 0.0, saturation: 0.55, brightness: 0.92).opacity(0.85))
-                                    .clipShape(Capsule())
-                            }
-
-                            Text(String(localized: "monthly_total"))
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
                             HStack(alignment: .lastTextBaseline, spacing: 4) {
                                 Text("\(categoryStore.currencySymbol)\(Int(viewModel.monthlyTotal))")
                                     .font(.system(size: 48, weight: .bold, design: .rounded))
@@ -50,6 +50,7 @@ struct HomeView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 24)
+                        .padding(.bottom, -14) // 金額とカードの間の余白を半分に（24 - 14 = 10）
 
                         // Subscription Cards（コスパの悪い順）
                         let sorted = viewModel.sortedSubscriptions(threshold: categoryStore.costPerHourThreshold)

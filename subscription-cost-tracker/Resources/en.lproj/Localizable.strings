@@ -64,7 +64,9 @@
 "category_in_use_title" = "Category In Use";
 "category_in_use_message" = "Change the category of all subscriptions using this category first.";
 "settings_notification_section" = "Notifications";
-"settings_notification_description" = "Notification settings for subscription management and usage";
+"settings_notification_description" = "Get notified about subscription management and usage";
+"notification_time_weekly" = "Sent every Monday at 10:00 AM";
+"notification_time_monthly" = "Sent on the 1st of each month at 10:00 AM";
 "notification_off" = "Off";
 "notification_weekly" = "Weekly";
 "notification_monthly" = "Monthly";

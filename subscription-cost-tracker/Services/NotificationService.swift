@@ -9,22 +9,49 @@ import Foundation
 import UserNotifications
 import SwiftData
 
-final class NotificationService {
+final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationService()
-    private init() {}
+
+    private override init() {
+        super.init()
+        UNUserNotificationCenter.current().delegate = self
+    }
 
     static let frequencyKey = "notificationFrequency"
     private static let notificationId = "subscription_check"
 
     // 通知許可リクエスト
-    func requestPermission() {
+    func requestPermission(completion: @escaping (Bool) -> Void = { _ in }) {
         UNUserNotificationCenter.current().requestAuthorization(
             options: [.alert, .sound, .badge]
         ) { granted, error in
             if let error = error {
                 print("Notification permission error: \(error)")
             }
+            completion(granted)
         }
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    // アプリがフォアグラウンドにある時も通知を表示
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        print("🔔 Notification will present: \(notification.request.identifier)")
+        completionHandler([.banner, .sound, .badge])
+    }
+
+    // 通知をタップした時の処理
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        print("🔔 Notification tapped: \(response.notification.request.identifier)")
+        completionHandler()
     }
 
     /// サブスク確認通知をスケジュール（頻度と割高アプリ数を渡す）
@@ -40,7 +67,7 @@ final class NotificationService {
         content.sound = .default
 
         var dateComponents = DateComponents()
-        dateComponents.hour = 9
+        dateComponents.hour = 10
         dateComponents.minute = 0
 
         if frequency == "weekly" {
@@ -88,4 +115,5 @@ final class NotificationService {
 
         scheduleSubscriptionCheckNotification(frequency: frequency, poorValueCount: poorValueCount)
     }
+
 }

@@ -62,13 +62,15 @@ struct CostPerformanceCardView: View {
 
                     GeometryReader { geometry in
                         ZStack(alignment: .leading) {
+                            // Background
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(Color(.systemGray5))
                                 .frame(height: 8)
+                            // Filled portion with gradient ending at status color
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(
                                     LinearGradient(
-                                        colors: [.red, .orange, .yellow, .green],
+                                        colors: gradientColors(for: status),
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -115,6 +117,32 @@ struct CostPerformanceCardView: View {
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+    }
+
+    /// Returns gradient colors from red to the status color
+    private func gradientColors(for status: SubscriptionStatus) -> [Color] {
+        let startColor = Color(hue: 0.00, saturation: 0.85, brightness: 0.72) // tooExpensive red
+
+        switch status {
+        case .unused:
+            // Gray for unused
+            return [Color(white: 0.55), Color(white: 0.55)]
+        case .tooExpensive:
+            // Only red for very poor status
+            return [startColor, startColor]
+        case .expensive:
+            // Red to dark red/orange
+            return [startColor, Color(hue: 0.02, saturation: 0.80, brightness: 0.85)]
+        case .overpriced:
+            // Red to orange
+            return [startColor, Color(hue: 0.07, saturation: 0.90, brightness: 0.82)]
+        case .fair:
+            // Red to yellow
+            return [startColor, Color(hue: 0.10, saturation: 0.82, brightness: 0.68)]
+        case .good:
+            // Red to green
+            return [startColor, Color(hue: 0.36, saturation: 0.70, brightness: 0.58)]
+        }
     }
 }
 

@@ -11,6 +11,7 @@ struct SettingsView: View {
     @Query private var allSubscriptions: [Subscription]
 
     @AppStorage("notificationFrequency") private var notificationFrequency: String = "monthly"
+    @State private var hasCheckedNotificationPermission = false
 
     @State private var showingAddCategory = false
     @State private var newCategoryName = ""
@@ -48,30 +49,64 @@ struct SettingsView: View {
             List {
                 // MARK: 通知（一番上）
                 Section {
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 12) {
                         Text(String(localized: "settings_notification_description"))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
 
-                        Picker("", selection: $notificationFrequency) {
-                            Text(String(localized: "notification_off")).tag("off")
-                            Text(String(localized: "notification_weekly")).tag("weekly")
-                            Text(String(localized: "notification_monthly")).tag("monthly")
-                        }
-                        .pickerStyle(.segmented)
-                        .tint(.appTheme)
+                        // カスタム通知頻度ピッカー
+                        HStack(spacing: 0) {
+                            NotificationFrequencyButton(
+                                title: String(localized: "notification_off"),
+                                isSelected: notificationFrequency == "off",
+                                position: .leading
+                            ) {
+                                notificationFrequency = "off"
+                            }
 
-                        // 通知例文（動的カウント）
-                        if notificationFrequency != "off" {
-                            Text(String(format: String(localized: "notification_example_text"), poorValueCount))
+                            NotificationFrequencyButton(
+                                title: String(localized: "notification_weekly"),
+                                isSelected: notificationFrequency == "weekly",
+                                position: .middle
+                            ) {
+                                notificationFrequency = "weekly"
+                            }
+
+                            NotificationFrequencyButton(
+                                title: String(localized: "notification_monthly"),
+                                isSelected: notificationFrequency == "monthly",
+                                position: .trailing
+                            ) {
+                                notificationFrequency = "monthly"
+                            }
+                        }
+                        .frame(height: 44) // 20%増し（元の36.67から44へ）
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.appTheme.opacity(0.3), lineWidth: 1)
+                        )
+
+                        // 通知時刻の説明
+                        if notificationFrequency == "weekly" {
+                            Text(String(localized: "notification_time_weekly"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                                .padding(.top, 2)
+                        } else if notificationFrequency == "monthly" {
+                            Text(String(localized: "notification_time_monthly"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                     }
                     .padding(.vertical, 4)
                 } header: {
                     Text(String(localized: "settings_notification_section"))
+                }
+                .onAppear {
+                    // 通知許可状態をチェック
+                    if !hasCheckedNotificationPermission {
+                        checkNotificationPermission()
+                        hasCheckedNotificationPermission = true
+                    }
                 }
                 .onChange(of: notificationFrequency) {
                     NotificationService.shared.scheduleSubscriptionCheckNotification(
@@ -320,9 +355,127 @@ struct SettingsView: View {
         return v >= 1000 ? "\(v / 1000),\(String(format: "%03d", v % 1000))" : "\(v)"
     }
 
+    private func checkNotificationPermission() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                // 通知が拒否されている場合はオフに設定
+                if settings.authorizationStatus == .denied {
+                    notificationFrequency = "off"
+                }
+            }
+        }
+    }
+
     private func openURL(_ urlString: String) {
         guard let url = URL(string: urlString) else { return }
         UIApplication.shared.open(url)
+    }
+}
+
+// MARK: - NotificationFrequencyButton
+
+private struct NotificationFrequencyButton: View {
+    enum Position {
+        case leading, middle, trailing
+    }
+
+    let title: String
+    let isSelected: Bool
+    let position: Position
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(isSelected ? .white : .appTheme)
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+                .background(isSelected ? Color.appTheme.opacity(0.85) : Color.clear)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .clipShape(
+            RoundedCorners(
+                topLeft: position == .leading ? 8 : 0,
+                topRight: position == .trailing ? 8 : 0,
+                bottomLeft: position == .leading ? 8 : 0,
+                bottomRight: position == .trailing ? 8 : 0
+            )
+        )
+    }
+}
+
+// MARK: - RoundedCorners
+
+private struct RoundedCorners: Shape {
+    var topLeft: CGFloat = 0
+    var topRight: CGFloat = 0
+    var bottomLeft: CGFloat = 0
+    var bottomRight: CGFloat = 0
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        let width = rect.size.width
+        let height = rect.size.height
+
+        // 左上
+        path.move(to: CGPoint(x: rect.minX + topLeft, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX - topRight, y: rect.minY))
+
+        // 右上
+        if topRight > 0 {
+            path.addArc(
+                center: CGPoint(x: rect.maxX - topRight, y: rect.minY + topRight),
+                radius: topRight,
+                startAngle: Angle(degrees: -90),
+                endAngle: Angle(degrees: 0),
+                clockwise: false
+            )
+        }
+
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - bottomRight))
+
+        // 右下
+        if bottomRight > 0 {
+            path.addArc(
+                center: CGPoint(x: rect.maxX - bottomRight, y: rect.maxY - bottomRight),
+                radius: bottomRight,
+                startAngle: Angle(degrees: 0),
+                endAngle: Angle(degrees: 90),
+                clockwise: false
+            )
+        }
+
+        path.addLine(to: CGPoint(x: rect.minX + bottomLeft, y: rect.maxY))
+
+        // 左下
+        if bottomLeft > 0 {
+            path.addArc(
+                center: CGPoint(x: rect.minX + bottomLeft, y: rect.maxY - bottomLeft),
+                radius: bottomLeft,
+                startAngle: Angle(degrees: 90),
+                endAngle: Angle(degrees: 180),
+                clockwise: false
+            )
+        }
+
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + topLeft))
+
+        // 左上
+        if topLeft > 0 {
+            path.addArc(
+                center: CGPoint(x: rect.minX + topLeft, y: rect.minY + topLeft),
+                radius: topLeft,
+                startAngle: Angle(degrees: 180),
+                endAngle: Angle(degrees: 270),
+                clockwise: false
+            )
+        }
+
+        return path
     }
 }
 
