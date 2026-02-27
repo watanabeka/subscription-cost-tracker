@@ -31,6 +31,21 @@ enum AnalyticsPeriod: CaseIterable {
     }
 }
 
+// MARK: - CostPerformanceSortOption
+
+enum CostPerformanceSortOption: CaseIterable {
+    case costPerformance, startDate, amount, usageHours
+
+    var label: String {
+        switch self {
+        case .costPerformance: return String(localized: "analytics_sort_cost_performance")
+        case .startDate:       return String(localized: "analytics_sort_start_date")
+        case .amount:          return String(localized: "analytics_sort_amount")
+        case .usageHours:      return String(localized: "analytics_sort_usage_hours")
+        }
+    }
+}
+
 // MARK: - AnalyticsViewModel
 
 @Observable
@@ -60,9 +75,25 @@ class AnalyticsViewModel {
         }.sorted { $0.amount > $1.amount }
     }
 
-    /// コストパフォーマンスカード用（常に月額ベース）
-    var sortedByAmount: [Subscription] {
-        subscriptions.sorted { $0.monthlyAmount > $1.monthlyAmount }
+    /// コストパフォーマンスカード用（ソートオプションに応じて並べ替え）
+    func sortedForCostPerformance(by option: CostPerformanceSortOption, threshold: Double) -> [Subscription] {
+        switch option {
+        case .costPerformance:
+            return subscriptions.sorted { lhs, rhs in
+                let ls = lhs.status(threshold: threshold)
+                let rs = rhs.status(threshold: threshold)
+                if ls.sortOrder != rs.sortOrder {
+                    return ls.sortOrder < rs.sortOrder
+                }
+                return lhs.monthlyAmount > rhs.monthlyAmount
+            }
+        case .startDate:
+            return subscriptions.sorted { $0.startDate > $1.startDate }
+        case .amount:
+            return subscriptions.sorted { $0.monthlyAmount > $1.monthlyAmount }
+        case .usageHours:
+            return subscriptions.sorted { $0.weeklyUsageHours > $1.weeklyUsageHours }
+        }
     }
 
     func loadSubscriptions(from context: ModelContext) {

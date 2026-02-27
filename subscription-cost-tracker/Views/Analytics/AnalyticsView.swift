@@ -10,8 +10,10 @@ import SwiftData
 
 struct AnalyticsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(CategoryStore.self) private var categoryStore
     @State private var viewModel = AnalyticsViewModel()
     @State private var period: AnalyticsPeriod = .monthly
+    @State private var sortOption: CostPerformanceSortOption = .costPerformance
 
     var body: some View {
         NavigationStack {
@@ -43,14 +45,45 @@ struct AnalyticsView: View {
                         .padding(.horizontal)
                     }
 
-                    // Cost Performance Cards（月額ベースで固定）
-                    if !viewModel.sortedByAmount.isEmpty {
+                    // Cost Performance Cards
+                    let sorted = viewModel.sortedForCostPerformance(
+                        by: sortOption,
+                        threshold: categoryStore.costPerHourThreshold
+                    )
+                    if !sorted.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text(String(localized: "label_cost_performance"))
-                                .font(.headline)
-                                .padding(.horizontal)
+                            // ヘッダー行：タイトル + ソートフィルター
+                            HStack {
+                                Text(String(localized: "label_cost_performance"))
+                                    .font(.headline)
+                                Spacer()
+                                Menu {
+                                    ForEach(CostPerformanceSortOption.allCases, id: \.self) { option in
+                                        Button {
+                                            sortOption = option
+                                        } label: {
+                                            HStack {
+                                                Text(option.label)
+                                                if sortOption == option {
+                                                    Image(systemName: "checkmark")
+                                                }
+                                            }
+                                        }
+                                    }
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Text(sortOption.label)
+                                            .font(.subheadline)
+                                            .foregroundStyle(.appTheme)
+                                        Image(systemName: "chevron.up.chevron.down")
+                                            .font(.caption)
+                                            .foregroundStyle(.appTheme)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
 
-                            ForEach(viewModel.sortedByAmount, id: \.id) { subscription in
+                            ForEach(sorted, id: \.id) { subscription in
                                 CostPerformanceCardView(subscription: subscription)
                                     .padding(.horizontal)
                             }

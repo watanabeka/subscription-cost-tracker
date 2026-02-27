@@ -134,4 +134,24 @@ enum SubscriptionStatus {
         case .good:         return String(localized: "status_good")
         }
     }
+
+    /// コスパの悪い順（0が最悪）
+    var sortOrder: Int {
+        switch self {
+        case .tooExpensive: return 0
+        case .expensive:    return 1
+        case .overpriced:   return 2
+        case .fair:         return 3
+        case .good:         return 4
+        case .unused:       return 5
+        }
+    }
+
+    /// 割高以上かどうか（ホーム・通知のカウント用）
+    var isPoorValue: Bool {
+        switch self {
+        case .tooExpensive, .expensive, .overpriced: return true
+        default: return false
+        }
+    }
 }
