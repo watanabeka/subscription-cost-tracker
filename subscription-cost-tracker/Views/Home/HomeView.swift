@@ -22,6 +22,19 @@ struct HomeView: View {
                     VStack(spacing: 20) {
                         // Header - Monthly Total
                         VStack(spacing: 8) {
+                            // コスパの悪いアプリ数バナー
+                            let poorCount = viewModel.poorValueCount(threshold: categoryStore.costPerHourThreshold)
+                            if poorCount > 0 {
+                                Text(String(format: String(localized: "home_poor_value_label"), poorCount))
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 6)
+                                    .background(Color(hue: 0.0, saturation: 0.55, brightness: 0.92).opacity(0.85))
+                                    .clipShape(Capsule())
+                            }
+
                             Text(String(localized: "monthly_total"))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
@@ -38,8 +51,9 @@ struct HomeView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 24)
 
-                        // Subscription Cards
-                        if viewModel.sortedSubscriptions.isEmpty {
+                        // Subscription Cards（コスパの悪い順）
+                        let sorted = viewModel.sortedSubscriptions(threshold: categoryStore.costPerHourThreshold)
+                        if sorted.isEmpty {
                             VStack(spacing: 12) {
                                 Image(systemName: "plus.circle")
                                     .font(.system(size: 60))
@@ -52,7 +66,7 @@ struct HomeView: View {
                             .padding(.top, 60)
                         } else {
                             LazyVStack(spacing: 12) {
-                                ForEach(viewModel.sortedSubscriptions, id: \.id) { subscription in
+                                ForEach(sorted, id: \.id) { subscription in
                                     Button {
                                         editingSubscription = subscription
                                     } label: {

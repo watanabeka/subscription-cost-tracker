@@ -10,6 +10,8 @@ struct SettingsView: View {
     @Environment(CategoryStore.self) private var categoryStore
     @Query private var allSubscriptions: [Subscription]
 
+    @AppStorage("notificationFrequency") private var notificationFrequency: String = "monthly"
+
     @State private var showingAddCategory = false
     @State private var newCategoryName = ""
     @State private var editingCategory: CategoryItem? = nil
@@ -27,11 +29,57 @@ struct SettingsView: View {
         Set(allSubscriptions.map { $0.category })
     }
 
+    private var poorValueCount: Int {
+        allSubscriptions.filter {
+            $0.status(threshold: categoryStore.costPerHourThreshold).isPoorValue
+        }.count
+    }
+
+    private var selectedCurrencyDisplayName: String {
+        CategoryStore.supportedCurrencies
+            .first { $0.id == categoryStore.selectedCurrencyCode }?.displayName
+            ?? categoryStore.currencySymbol
+    }
+
     var body: some View {
         @Bindable var store = categoryStore
 
         NavigationStack {
             List {
+                // MARK: 通知（一番上）
+                Section {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(String(localized: "settings_notification_description"))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        Picker("", selection: $notificationFrequency) {
+                            Text(String(localized: "notification_off")).tag("off")
+                            Text(String(localized: "notification_weekly")).tag("weekly")
+                            Text(String(localized: "notification_monthly")).tag("monthly")
+                        }
+                        .pickerStyle(.segmented)
+                        .tint(.appTheme)
+
+                        // 通知例文（動的カウント）
+                        if notificationFrequency != "off" {
+                            Text(String(format: String(localized: "notification_example_text"), poorValueCount))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 2)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text(String(localized: "settings_notification_section"))
+                }
+                .onChange(of: notificationFrequency) {
+                    NotificationService.shared.scheduleSubscriptionCheckNotification(
+                        frequency: notificationFrequency,
+                        poorValueCount: poorValueCount
+                    )
+                }
+
                 // MARK: Currency
                 Section {
                     HStack {
@@ -47,10 +95,9 @@ struct SettingsView: View {
                                 }
                             }
                         } label: {
-                            Text(categoryStore.currencySymbol)
+                            Text(selectedCurrencyDisplayName)
                                 .fontWeight(.bold)
-                                .font(.system(size: 17 * 1.3))
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(.appTheme)
                         }
                     }
                 } header: {
@@ -77,7 +124,7 @@ struct SettingsView: View {
                                 Text(String(localized: "per_hour"))
                                     .foregroundStyle(.secondary)
                             }
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(.appTheme)
                         }
                     }
 
@@ -146,7 +193,7 @@ struct SettingsView: View {
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(width: 24, height: 24)
-                                .background(Circle().fill(Color.blue))
+                                .background(Circle().fill(Color.appTheme))
                         }
                     }
                 }
@@ -266,7 +313,6 @@ struct SettingsView: View {
             categoryStore.costPerHourThreshold = value
             categoryStore.saveThreshold()
         }
-        // 未入力やゼロの場合は元の値を維持（何もしない）
     }
 
     private func formatAmount(_ value: Double) -> String {
